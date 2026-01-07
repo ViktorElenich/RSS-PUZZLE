@@ -14,3 +14,8 @@ export const LoginConstants = {
   FormTitle: 'RSS Puzzle',
   Description: 'Enter your details to start the game',
 } as const;
+
+export const ValidationConstants = {
+  MinFirstNameLength: 3,
+  MinSurnameLength: 4,
+} as const;
