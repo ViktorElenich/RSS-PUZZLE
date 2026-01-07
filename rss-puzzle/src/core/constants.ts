@@ -19,3 +19,5 @@ export const ValidationConstants = {
   MinFirstNameLength: 3,
   MinSurnameLength: 4,
 } as const;
+
+export const USER_DATA_KEY = 'rss-puzzle-user';
