@@ -1,6 +1,7 @@
 import { HeaderView } from '../components/header/header';
 import { PageIds } from '../core/constants';
 import { LoginView } from '../pages/LoginPage/login-view';
+import { MainView } from '../pages/MainPage/main-view';
 import { StartView } from '../pages/StartPage/start-view';
 import { storageService } from '../services/storage-service';
 
@@ -39,10 +40,11 @@ export class Router {
 
   private renderPage(pageId: string): void {
     document.body.innerHTML = '';
+    const rootElement = document.body;
 
     if (pageId !== PageIds.LoginPage) {
       const header = new HeaderView();
-      document.body.append(header.getElement());
+      rootElement.append(header.getElement());
     }
 
     let pageElement: HTMLElement | undefined;
@@ -55,6 +57,11 @@ export class Router {
       }
       case PageIds.StartPage: {
         const view = new StartView();
+        pageElement = view.getElement();
+        break;
+      }
+      case PageIds.MainPage: {
+        const view = new MainView();
         pageElement = view.getElement();
         break;
       }
