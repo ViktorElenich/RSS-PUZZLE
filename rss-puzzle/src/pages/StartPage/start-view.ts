@@ -13,6 +13,7 @@ export class StartView {
     this.startButton = createElement('button', {
       className: 'start-button',
       text: StartPageConstants.ButtonText,
+      on: [['click', (): void => { this.handleStartGame(); }]],
     });
 
     const title = createElement('h1', {
@@ -42,5 +43,9 @@ export class StartView {
 
   public getElement(): HTMLElement {
     return this.element;
+  }
+
+  private handleStartGame(): void {
+    globalThis.location.hash = PageIds.MainPage;
   }
 }
