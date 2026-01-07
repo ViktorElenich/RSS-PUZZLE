@@ -25,3 +25,9 @@ export const USER_DATA_KEY = 'rss-puzzle-user';
 export const HeaderConstants = {
   ButtonText: 'Logout',
 } as const;
+
+export const StartPageConstants = {
+  Title: 'RSS Puzzle',
+  Description: 'Boost your English skills by assembling sentences from jumbled words. Enjoy a unique puzzle-like experience with artwork from famous masters.',
+  ButtonText: 'Start Game',
+} as const;
