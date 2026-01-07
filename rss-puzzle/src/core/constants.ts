@@ -31,3 +31,19 @@ export const StartPageConstants = {
   Description: 'Boost your English skills by assembling sentences from jumbled words. Enjoy a unique puzzle-like experience with artwork from famous masters.',
   ButtonText: 'Start Game',
 } as const;
+
+export const MainPageConstants = {
+  Title: 'RSS Puzzle',
+  LevelLabel: 'Level',
+  RoundLabel: 'Round',
+  PuzzleAreaId: 'puzzle-area',
+  SourceAreaId: 'source-area',
+  ButtonCheck: 'Check',
+  ButtonGiveUp: 'I don\'t know',
+  ButtonContinue: 'Continue',
+  ButtonResults: 'Results',
+} as const;
+
+export const GameConstants = {
+  TotalSentences: 10,
+} as const;
