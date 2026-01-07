@@ -15,3 +15,8 @@ export type CreateElementOptions<T extends HTMLElement> = {
   on?: readonly EventTuple[];
   text?: string;
 }
+
+export type ValidationResult = {
+  isValid: boolean;
+  error?: string;
+};

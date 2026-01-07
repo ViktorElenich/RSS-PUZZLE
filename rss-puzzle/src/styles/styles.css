@@ -143,3 +143,30 @@ select {
   transform: translateY(1px);
 }
 /*  */
+
+/* Message of Mistake */
+.input-error {
+  color: #e53e3e;
+  font-size: 0.85rem;
+  margin-top: 4px;
+  min-height: 20px;
+  font-weight: 500;
+}
+
+.login-input.invalid {
+  border-color: #e53e3e;
+  background-color: #fff5f5;
+}
+
+.login-input.invalid:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.15);
+}
+
+.login-button:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+/*  */
