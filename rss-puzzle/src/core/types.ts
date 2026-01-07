@@ -20,3 +20,8 @@ export type ValidationResult = {
   isValid: boolean;
   error?: string;
 };
+
+export type UserData = {
+  firstName: string;
+  surname: string;
+};

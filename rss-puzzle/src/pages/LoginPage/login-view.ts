@@ -1,4 +1,5 @@
 import { LoginConstants, PageIds, ValidationConstants } from '../../core/constants';
+import { storageService } from '../../services/storage-service';
 import { createElement } from '../../utils/dom';
 import { validateName } from '../../utils/validation';
 
@@ -41,7 +42,7 @@ export class LoginView {
         this.firstNameInput, 
         this.firstNameError, 
         ValidationConstants.MinFirstNameLength, 
-        'First Name',
+        LoginConstants.FirstNameLabelText,
       );
     });
 
@@ -50,7 +51,7 @@ export class LoginView {
         this.surnameInput, 
         this.surnameError, 
         ValidationConstants.MinSurnameLength, 
-        'Surname',
+        LoginConstants.SurnameLabelText,
       );
     });
 
@@ -146,7 +147,11 @@ export class LoginView {
   private handleSubmit(event: Event): void {
     event.preventDefault();
     if (this.isFirstNameValid && this.isSurnameValid) {
-      console.log('Login success!', this.firstNameInput.value, this.surnameInput.value);
+      storageService.saveUser({
+        firstName: this.firstNameInput.value,
+        surname: this.surnameInput.value,
+      });
+      console.log('User saved to LocalStorage');
     }
   }
 }
