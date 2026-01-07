@@ -21,3 +21,7 @@ export const ValidationConstants = {
 } as const;
 
 export const USER_DATA_KEY = 'rss-puzzle-user';
+
+export const HeaderConstants = {
+  ButtonText: 'Logout',
+} as const;

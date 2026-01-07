@@ -151,7 +151,7 @@ export class LoginView {
         firstName: this.firstNameInput.value,
         surname: this.surnameInput.value,
       });
-      console.log('User saved to LocalStorage');
+      globalThis.location.hash = PageIds.StartPage;
     }
   }
 }

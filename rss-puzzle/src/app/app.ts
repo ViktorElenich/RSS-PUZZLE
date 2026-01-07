@@ -1,9 +1,13 @@
-// src/app/app.ts
-import { LoginView } from '../pages/LoginPage/login-view';
+import { Router } from './router';
 
 export class App {
+  private readonly router: Router;
+
+  constructor() {
+    this.router = new Router();
+  }
+
   public start(): void {
-    const loginView = new LoginView();
-    document.body.append(loginView.getElement());
+    this.router.enable();
   }
 }

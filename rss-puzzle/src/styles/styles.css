@@ -170,3 +170,33 @@ select {
   filter: none;
 }
 /*  */
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 30px;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.logout-button {
+  padding: 8px 16px;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+  background-color: #c53030;
+}
+/*  */
