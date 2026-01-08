@@ -3,23 +3,28 @@ import {
   renderWordsToContainer, 
   createSourceArea, 
   highlightActiveRow,
+  getCurrentRowWords,
+  setValidationStyles,
+  clearValidationStyles,
 } from './main-ui';
 import { fetchLevelData } from '../../api/api';
 import { PageIds, MainPageConstants, GameConstants } from '../../core/constants';
 import { createElement } from '../../utils/dom';
 import { shuffleArray } from '../../utils/shuffle';
 
-import type { Round, ShuffledWord } from '../../core/types';
+import type { LevelCollection, Round, ShuffledWord } from '../../core/types';
 
 export class MainView {
   private readonly element: HTMLElement;
   private readonly puzzleArea: HTMLElement;
   private readonly sourceArea: HTMLElement;
+  private levelInfoElement: HTMLElement;
   
   private checkBtn: HTMLButtonElement;
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
 
+  private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
   private currentLevel = 1; 
   private currentRoundIndex = 0;
@@ -29,6 +34,8 @@ export class MainView {
     this.puzzleArea = createPuzzleArea();
     this.sourceArea = createSourceArea();
 
+    this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
+
     this.puzzleArea.addEventListener('click', this.handleWordClick.bind(this));
     this.sourceArea.addEventListener('click', this.handleWordClick.bind(this));
 
@@ -36,6 +43,11 @@ export class MainView {
     this.giveUpBtn = this.createButton(MainPageConstants.ButtonGiveUp, 'game-btn-secondary');
     this.continueBtn = this.createButton(
       MainPageConstants.ButtonContinue, 'game-btn-primary hidden');
+
+    this.checkBtn.disabled = true;  
+
+    this.checkBtn.addEventListener('click', this.handleCheck.bind(this));
+    this.continueBtn.addEventListener('click', this.handleContinue.bind(this));
 
     const buttonsPanel = createElement('div', { className: 'game-buttons' }, 
       this.giveUpBtn, 
@@ -65,6 +77,12 @@ export class MainView {
   }
 
   private handleWordClick(event: Event): void {
+    if (!this.continueBtn.classList.contains(MainPageConstants.ClassHidden)) {
+      return;
+    }
+
+    clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
+
     const target = event.target;
     if (!(target instanceof HTMLElement)) { return; }
 
@@ -79,19 +97,22 @@ export class MainView {
     } else if (currentRow.contains(wordElement)) {
       this.sourceArea.append(wordElement);
     }
+
+    this.updateCheckButtonState();
   }
 
   private async initGame(): Promise<void> {
-    const levelCollection = await fetchLevelData(this.currentLevel);
+    const data = await fetchLevelData(this.currentLevel);
 
-    if (!levelCollection) {
+    if (!data) {
       this.sourceArea.textContent = 'Error loading data';
       return;
     }
 
-    const roundData = levelCollection.rounds[this.currentRoundIndex];
+    this.levelCollection = data;
+    this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
     
-    this.currentRoundData = roundData;
+    this.updateLevelInfo();
     this.renderCurrentSentence();
   }
 
@@ -118,6 +139,94 @@ export class MainView {
 
     const shuffled: ShuffledWord[] = shuffleArray<ShuffledWord>(wordObjects);
     renderWordsToContainer(this.sourceArea, shuffled);
+    this.updateCheckButtonState();
+  }
+
+  private handleCheck(): void {
+    if (!this.currentRoundData) { return; }
+
+    const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+    
+    const originalText = sentenceData.textExample.split(' ');
+    const currentWords = getCurrentRowWords(this.puzzleArea, this.currentSentenceIndex);
+
+    if (currentWords.length !== originalText.length) {
+      return; 
+    }
+
+    const checkResults = currentWords.map((word, index) => word === originalText[index]);
+    setValidationStyles(this.puzzleArea, this.currentSentenceIndex, checkResults);
+
+    const hasError = checkResults.includes(false);
+
+    if (!hasError) {
+      this.showContinueButton();
+    } 
+  }
+
+  private handleContinue(): void {
+    clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
+
+    this.currentSentenceIndex += 1;
+
+    if (this.currentSentenceIndex < GameConstants.TotalSentences) {
+      this.renderCurrentSentence();
+      this.resetButtonState();
+      return;
+    } 
+
+    this.currentRoundIndex += 1;
+    this.currentSentenceIndex = 0;
+
+    if (this.levelCollection && this.currentRoundIndex < this.levelCollection.rounds.length) {
+      this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
+      
+      this.rebuildPuzzleRows();
+      
+      this.updateLevelInfo();
+      this.renderCurrentSentence();
+      this.resetButtonState();
+    } else {
+      this.sourceArea.textContent = 'Level Completed! Great job!';
+      this.checkBtn.classList.add(MainPageConstants.ClassHidden);
+      this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
+      this.continueBtn.classList.add(MainPageConstants.ClassHidden);
+    }
+  }
+
+  private updateCheckButtonState(): void {
+    if (!this.currentRoundData) { return; }
+    
+    const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+    const expectedLength = sentenceData.textExample.split(' ').length;
+    const currentLength = getCurrentRowWords(this.puzzleArea, this.currentSentenceIndex).length;
+    this.checkBtn.disabled = currentLength !== expectedLength;
+  }
+
+  private updateLevelInfo(): void {
+    this.levelInfoElement.textContent = 
+      `Level: ${this.currentLevel} | Round: ${this.currentRoundIndex + 1}`;
+  }
+
+  private rebuildPuzzleRows(): void {
+    this.puzzleArea.replaceChildren();
+    for (let index = 0; index < GameConstants.TotalSentences; index += 1) {
+      const row = createElement('div', 
+        { className: 'puzzle-row', dataset: { row: String(index) } });
+      this.puzzleArea.append(row);
+    }
+  }
+
+  private showContinueButton(): void {
+    this.checkBtn.classList.add(MainPageConstants.ClassHidden);
+    this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
+    this.continueBtn.classList.remove(MainPageConstants.ClassHidden);
+  }
+
+  private resetButtonState(): void {
+    this.checkBtn.classList.remove(MainPageConstants.ClassHidden);
+    this.giveUpBtn.classList.remove(MainPageConstants.ClassHidden);
+    this.continueBtn.classList.add(MainPageConstants.ClassHidden);
   }
 
   private createButton(text: string, extraClass: string): HTMLButtonElement {
@@ -129,10 +238,8 @@ export class MainView {
   }
 
   private createControlsBar(): HTMLElement {
-    const levelSelect = createElement('div', 
-      { className: 'level-selectors', text: 'Level: 1 | Round: 1' });
     const hints = createElement('div', { className: 'hint-buttons', text: 'Hints: 🎵 🔤' });
 
-    return createElement('div', { className: 'game-controls-bar' }, levelSelect, hints);
+    return createElement('div', { className: 'game-controls-bar' }, this.levelInfoElement, hints);
   }
 }

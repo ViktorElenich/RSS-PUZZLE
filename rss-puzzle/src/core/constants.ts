@@ -42,6 +42,9 @@ export const MainPageConstants = {
   ButtonGiveUp: 'I don\'t know',
   ButtonContinue: 'Continue',
   ButtonResults: 'Results',
+  ClassHidden: 'hidden',
+  ClassSuccess: 'success',
+  ClassError: 'error',
 } as const;
 
 export const GameConstants = {
