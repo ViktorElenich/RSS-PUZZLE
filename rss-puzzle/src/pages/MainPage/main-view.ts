@@ -48,6 +48,7 @@ export class MainView {
 
     this.checkBtn.addEventListener('click', this.handleCheck.bind(this));
     this.continueBtn.addEventListener('click', this.handleContinue.bind(this));
+    this.giveUpBtn.addEventListener('click', this.handleGiveUp.bind(this));
 
     const buttonsPanel = createElement('div', { className: 'game-buttons' }, 
       this.giveUpBtn, 
@@ -119,25 +120,11 @@ export class MainView {
   private renderCurrentSentence(): void {
     if (!this.currentRoundData) { return; }
 
-    const wordsList = this.currentRoundData.words;
-    if (this.currentSentenceIndex >= wordsList.length) { return; }
-
-    const sentenceData = wordsList[this.currentSentenceIndex];
-
     highlightActiveRow(this.puzzleArea, this.currentSentenceIndex);
 
-    const segments: string[] = sentenceData.textExample.split(' ');
-    const totalLettersCount = segments.reduce((accumulator, word) => accumulator + word.length, 0);
-    
-    const wordObjects: ShuffledWord[] = segments.map((word, index) => ({
-      word,
-      originalIndex: index,
-      isFirst: index === 0,
-      isLast: index === segments.length - 1,
-      width: `${(word.length / totalLettersCount) * GameConstants.PercentageBase}%`,
-    }));
-
+    const wordObjects = this.generateWordData();
     const shuffled: ShuffledWord[] = shuffleArray<ShuffledWord>(wordObjects);
+
     renderWordsToContainer(this.sourceArea, shuffled);
     this.updateCheckButtonState();
   }
@@ -192,6 +179,42 @@ export class MainView {
       this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
       this.continueBtn.classList.add(MainPageConstants.ClassHidden);
     }
+  }
+
+  private handleGiveUp(): void {
+    if (!this.currentRoundData) { return; }
+    
+    clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
+
+    const correctWords = this.generateWordData();
+
+    const currentRow = this.puzzleArea.querySelector(`[data-row="${this.currentSentenceIndex}"]`);
+    if (!currentRow || !(currentRow instanceof HTMLElement)) {return;}
+
+    renderWordsToContainer(currentRow, correctWords);
+
+    this.sourceArea.replaceChildren();
+
+    const successResults = correctWords.map(() => true);
+    setValidationStyles(this.puzzleArea, this.currentSentenceIndex, successResults);
+
+    this.showContinueButton();
+  }
+
+  private generateWordData(): ShuffledWord[] {
+    if (!this.currentRoundData) { return []; }
+
+    const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+    const segments: string[] = sentenceData.textExample.split(' ');
+    const totalLettersCount = segments.reduce((accumulator, word) => accumulator + word.length, 0);
+
+    return segments.map((word, index) => ({
+      word,
+      originalIndex: index,
+      isFirst: index === 0,
+      isLast: index === segments.length - 1,
+      width: `${(word.length / totalLettersCount) * GameConstants.PercentageBase}%`,
+    }));
   }
 
   private updateCheckButtonState(): void {
