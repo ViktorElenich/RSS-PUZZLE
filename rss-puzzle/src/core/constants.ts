@@ -46,4 +46,5 @@ export const MainPageConstants = {
 
 export const GameConstants = {
   TotalSentences: 10,
+  PercentageBase: 100,
 } as const;
