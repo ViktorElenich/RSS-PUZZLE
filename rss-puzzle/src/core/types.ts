@@ -25,3 +25,38 @@ export type UserData = {
   firstName: string;
   surname: string;
 };
+
+export type WordData = {
+  audioExample: string;
+  textExample: string;
+  textExampleTranslate: string;
+  id: number;
+  word: string;
+  wordTranslate: string;
+};
+
+export type LevelData = {
+  id: string;
+  name: string;
+  imageSrc: string;
+  cutSrc: string;
+  author: string;
+  year: string;
+};
+
+export type Round = {
+  levelData: LevelData;
+  words: WordData[];
+};
+
+export type LevelCollection = {
+  rounds: Round[];
+};
+
+export type ShuffledWord = {
+  word: string;
+  originalIndex: number;
+  isFirst: boolean;
+  isLast: boolean;
+  width: string;
+};
