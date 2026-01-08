@@ -6,11 +6,11 @@ import {
   getCurrentRowWords,
   setValidationStyles,
   clearValidationStyles,
-  getDragAfterElement,
 } from './main-ui';
 import { fetchLevelData } from '../../api/api';
 import { PageIds, MainPageConstants, GameConstants } from '../../core/constants';
 import { createElement } from '../../utils/dom';
+import { DragManager } from '../../utils/drag-manager';
 import { shuffleArray } from '../../utils/shuffle';
 
 import type { LevelCollection, Round, ShuffledWord } from '../../core/types';
@@ -31,7 +31,7 @@ export class MainView {
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
 
-  private draggingElement: HTMLElement | undefined = undefined;
+  private draggingElement: DragManager;
 
   constructor() {
     this.puzzleArea = createPuzzleArea();
@@ -39,8 +39,20 @@ export class MainView {
 
     this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
 
-    this.addDragAndDropListeners(this.puzzleArea);
-    this.addDragAndDropListeners(this.sourceArea);
+    this.draggingElement = new DragManager({
+      puzzleArea: this.puzzleArea,
+      sourceArea: this.sourceArea,
+      getCurrentRow: (): HTMLElement | undefined => {
+        const row = this.puzzleArea.children[this.currentSentenceIndex];
+        return row instanceof HTMLElement ? row : undefined;
+      },
+      onUpdate: (): void => {
+        this.updateCheckButtonState();
+      },
+      onValidationClear: (): void => {
+        clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
+      },
+    });
 
     this.puzzleArea.addEventListener('click', this.handleWordClick.bind(this));
     this.sourceArea.addEventListener('click', this.handleWordClick.bind(this));
@@ -255,66 +267,6 @@ export class MainView {
     this.checkBtn.classList.remove(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.remove(MainPageConstants.ClassHidden);
     this.continueBtn.classList.add(MainPageConstants.ClassHidden);
-  }
-
-  private addDragAndDropListeners(element: HTMLElement): void {
-    element.addEventListener('dragstart', this.handleDragStart.bind(this));
-    element.addEventListener('dragend', this.handleDragEnd.bind(this));
-    element.addEventListener('dragover', this.handleDragOver.bind(this));
-  }
-
-  private handleDragStart(event: DragEvent): void {
-    if (!this.continueBtn.classList.contains(MainPageConstants.ClassHidden)) {
-      event.preventDefault();
-      return;
-    }
-
-    const target = event.target;
-    if (!(target instanceof HTMLElement) || !target.classList.contains('word-piece')) {
-      return;
-    }
-    this.draggingElement = target;
-
-    target.classList.add(MainPageConstants.ClassDragging);
-    clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
-  }
-
-  private handleDragEnd(event: DragEvent): void {
-    const target = event.target;
-    if (target instanceof HTMLElement) {
-      target.classList.remove(MainPageConstants.ClassDragging);
-    }
-    this.draggingElement = undefined;
-    this.updateCheckButtonState();
-  }
-
-  private handleDragOver(event: DragEvent): void {
-    event.preventDefault();
-    
-    const target = event.target;
-    if (!(target instanceof HTMLElement)) { return; }
-
-    const puzzleRow = this.puzzleArea.children[this.currentSentenceIndex];
-    if (!(puzzleRow instanceof HTMLElement)) { return; }
-
-    let container: HTMLElement | undefined = undefined;
-
-    if (this.sourceArea.contains(target) || target === this.sourceArea) {
-      container = this.sourceArea;
-    } else if (puzzleRow.contains(target) || target === puzzleRow) {
-      container = puzzleRow;
-    }
-
-    if (!container) { return; }
-    if (!this.draggingElement) { return; }
-
-    const afterElement = getDragAfterElement(container, event.clientX);
-    
-    if (afterElement) {
-      afterElement.before(this.draggingElement);
-    } else {
-      container.append(this.draggingElement);
-    }
   }
 
   private createButton(text: string, extraClass: string): HTMLButtonElement {

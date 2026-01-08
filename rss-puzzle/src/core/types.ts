@@ -60,3 +60,11 @@ export type ShuffledWord = {
   isLast: boolean;
   width: string;
 };
+
+export type DragManagerOptions = {
+  puzzleArea: HTMLElement;
+  sourceArea: HTMLElement;
+  getCurrentRow: () => HTMLElement | undefined;
+  onUpdate: () => void;
+  onValidationClear: () => void;
+};

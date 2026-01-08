@@ -46,6 +46,13 @@ export const MainPageConstants = {
   ClassSuccess: 'success',
   ClassError: 'error',
   ClassDragging: 'dragging',
+  ClassClone: 'dragging-clone',
+  WordPieceClass: 'word-piece',
+  DragZIndex: '1000',
+  DragOpacity: '0.9',
+  DragThresholdPx: 5,
+  WordWidthMultiplier: 10,
+  WordWidthBase: 20,
 } as const;
 
 export const GameConstants = {
