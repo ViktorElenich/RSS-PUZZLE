@@ -45,9 +45,11 @@ export const MainPageConstants = {
   ClassHidden: 'hidden',
   ClassSuccess: 'success',
   ClassError: 'error',
+  ClassDragging: 'dragging',
 } as const;
 
 export const GameConstants = {
   TotalSentences: 10,
   PercentageBase: 100,
+  Divider: 2,
 } as const;

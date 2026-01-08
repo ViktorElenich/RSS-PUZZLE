@@ -6,6 +6,7 @@ import {
   getCurrentRowWords,
   setValidationStyles,
   clearValidationStyles,
+  getDragAfterElement,
 } from './main-ui';
 import { fetchLevelData } from '../../api/api';
 import { PageIds, MainPageConstants, GameConstants } from '../../core/constants';
@@ -30,11 +31,16 @@ export class MainView {
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
 
+  private draggingElement: HTMLElement | undefined = undefined;
+
   constructor() {
     this.puzzleArea = createPuzzleArea();
     this.sourceArea = createSourceArea();
 
     this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
+
+    this.addDragAndDropListeners(this.puzzleArea);
+    this.addDragAndDropListeners(this.sourceArea);
 
     this.puzzleArea.addEventListener('click', this.handleWordClick.bind(this));
     this.sourceArea.addEventListener('click', this.handleWordClick.bind(this));
@@ -90,8 +96,7 @@ export class MainView {
     const wordElement = target.closest('.word-piece');
     if (!wordElement || !(wordElement instanceof HTMLElement)) { return; }
 
-    const currentRow = this.puzzleArea.querySelector(`[data-row="${this.currentSentenceIndex}"]`);
-    if (!currentRow) { return; }
+    const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
 
     if (this.sourceArea.contains(wordElement)) {
       currentRow.append(wordElement);
@@ -188,8 +193,8 @@ export class MainView {
 
     const correctWords = this.generateWordData();
 
-    const currentRow = this.puzzleArea.querySelector(`[data-row="${this.currentSentenceIndex}"]`);
-    if (!currentRow || !(currentRow instanceof HTMLElement)) {return;}
+    const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
+    if (!(currentRow instanceof HTMLElement)) {return;}
 
     renderWordsToContainer(currentRow, correctWords);
 
@@ -250,6 +255,66 @@ export class MainView {
     this.checkBtn.classList.remove(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.remove(MainPageConstants.ClassHidden);
     this.continueBtn.classList.add(MainPageConstants.ClassHidden);
+  }
+
+  private addDragAndDropListeners(element: HTMLElement): void {
+    element.addEventListener('dragstart', this.handleDragStart.bind(this));
+    element.addEventListener('dragend', this.handleDragEnd.bind(this));
+    element.addEventListener('dragover', this.handleDragOver.bind(this));
+  }
+
+  private handleDragStart(event: DragEvent): void {
+    if (!this.continueBtn.classList.contains(MainPageConstants.ClassHidden)) {
+      event.preventDefault();
+      return;
+    }
+
+    const target = event.target;
+    if (!(target instanceof HTMLElement) || !target.classList.contains('word-piece')) {
+      return;
+    }
+    this.draggingElement = target;
+
+    target.classList.add(MainPageConstants.ClassDragging);
+    clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
+  }
+
+  private handleDragEnd(event: DragEvent): void {
+    const target = event.target;
+    if (target instanceof HTMLElement) {
+      target.classList.remove(MainPageConstants.ClassDragging);
+    }
+    this.draggingElement = undefined;
+    this.updateCheckButtonState();
+  }
+
+  private handleDragOver(event: DragEvent): void {
+    event.preventDefault();
+    
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) { return; }
+
+    const puzzleRow = this.puzzleArea.children[this.currentSentenceIndex];
+    if (!(puzzleRow instanceof HTMLElement)) { return; }
+
+    let container: HTMLElement | undefined = undefined;
+
+    if (this.sourceArea.contains(target) || target === this.sourceArea) {
+      container = this.sourceArea;
+    } else if (puzzleRow.contains(target) || target === puzzleRow) {
+      container = puzzleRow;
+    }
+
+    if (!container) { return; }
+    if (!this.draggingElement) { return; }
+
+    const afterElement = getDragAfterElement(container, event.clientX);
+    
+    if (afterElement) {
+      afterElement.before(this.draggingElement);
+    } else {
+      container.append(this.draggingElement);
+    }
   }
 
   private createButton(text: string, extraClass: string): HTMLButtonElement {
