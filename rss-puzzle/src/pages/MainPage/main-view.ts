@@ -33,6 +33,7 @@ export class MainView {
   private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
   private currentAudio: HTMLAudioElement | undefined = undefined;
+  private currentBackgroundImage: HTMLImageElement | undefined = undefined;
   private currentLevel = 1; 
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
@@ -167,6 +168,8 @@ export class MainView {
 
     this.levelCollection = data;
     this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
+
+    await this.loadRoundImage();
     
     this.updateLevelInfo();
     this.renderCurrentSentence();
@@ -194,7 +197,9 @@ export class MainView {
     const wordObjects = this.generateWordData();
     const shuffled: ShuffledWord[] = shuffleArray<ShuffledWord>(wordObjects);
 
-    renderWordsToContainer(this.sourceArea, shuffled);
+    if (!this.currentBackgroundImage) { return; }
+
+    renderWordsToContainer(this.sourceArea, shuffled, this.currentBackgroundImage);
     this.updateCheckButtonState();
   }
 
@@ -224,7 +229,7 @@ export class MainView {
     } 
   }
 
-  private handleContinue(): void {
+  private async handleContinue(): Promise<void> {
     clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
 
     this.currentSentenceIndex += 1;
@@ -240,6 +245,8 @@ export class MainView {
 
     if (this.levelCollection && this.currentRoundIndex < this.levelCollection.rounds.length) {
       this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
+
+      await this.loadRoundImage();
       
       this.rebuildPuzzleRows();
       
@@ -258,7 +265,7 @@ export class MainView {
   }
 
   private handleGiveUp(): void {
-    if (!this.currentRoundData) { return; }
+    if (!this.currentRoundData || !this.currentBackgroundImage) { return; }
     
     clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
 
@@ -267,7 +274,7 @@ export class MainView {
     const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
     if (!(currentRow instanceof HTMLElement)) {return;}
 
-    renderWordsToContainer(currentRow, correctWords);
+    renderWordsToContainer(currentRow, correctWords, this.currentBackgroundImage);
 
     this.sourceArea.replaceChildren();
 
@@ -288,31 +295,33 @@ export class MainView {
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
     const segments: string[] = sentenceData.textExample.split(' ');
     const totalLettersCount = segments.reduce((accumulator, word) => accumulator + word.length, 0);
-    const imageSource = 
-      `${MainPageConstants.ImagesBaseUrl}${this.currentRoundData.levelData.imageSrc}`;
+
+    const baseWidth = 1000; 
+    const pixelsPerPercent = baseWidth / GameConstants.PercentageBase;
 
     let currentXOffset = 0;
-    const pixelsPerPercent = MainPageConstants.PuzzleWidthPx / GameConstants.PercentageBase;
 
     return segments.map((word, index) => {
       const widthPercent = (word.length / totalLettersCount) * GameConstants.PercentageBase;
       const widthString = `${widthPercent}%`;
+      const widthPx = widthPercent * pixelsPerPercent;
 
-      const bgPosY = `-${this.currentSentenceIndex * MainPageConstants.PuzzleRowHeightPx}px`;
-      const bgPosX = `-${currentXOffset * pixelsPerPercent}px`;
+      const bgPosY = this.currentSentenceIndex * MainPageConstants.PuzzleRowHeightPx;
+      const bgPosX = currentXOffset * pixelsPerPercent;
 
-      currentXOffset += widthPercent;
-
-      return {
+      const wordData: ShuffledWord = {
         word,
         originalIndex: index,
         isFirst: index === 0,
         isLast: index === segments.length - 1,
         width: widthString,
-        backgroundImage: `url(${imageSource})`,
-        backgroundPosition: `${bgPosX} ${bgPosY}`,
-        backgroundSize: '1000px auto',
+        drawWidth: widthPx,
+        bgX: bgPosX,
+        bgY: bgPosY,
       };
+
+      currentXOffset += widthPercent;
+      return wordData;
     });
   }
 
@@ -399,6 +408,26 @@ export class MainView {
     }
 
     this.playAudioBtn.classList.toggle(MainPageConstants.ClassHidden, !this.isAudioHintEnabled);
+  }
+
+  private async loadRoundImage(): Promise<void> {
+    if (!this.currentRoundData) { return; }
+    
+    const imageUrl = 
+      `${MainPageConstants.ImagesBaseUrl}${this.currentRoundData.levelData.imageSrc}`;
+    
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = imageUrl;
+      img.addEventListener('load', (): void => {
+        this.currentBackgroundImage = img;
+        resolve();
+      });
+      img.addEventListener('error', (): void => {
+        this.currentBackgroundImage = undefined; 
+        resolve();
+      });
+    });
   }
 
   private showContinueButton(): void {

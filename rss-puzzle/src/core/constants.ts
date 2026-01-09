@@ -70,3 +70,21 @@ export const GameConstants = {
   PercentageBase: 100,
   Divider: 2,
 } as const;
+
+export const PuzzleRenderConstants = {
+  TabSize: 10,
+  CurveOffset: 5,
+  StrokeWidth: 1,
+  ShadowBlur: 3,
+  TextStrokeWidth: 3,
+  TabHeightDivider: 3,
+  OverlayOpacity: 0.2,
+  StartPoint: 0,
+  StrokeColor: 'rgba(255, 255, 255, 0.5)',
+  ShadowColor: 'black',
+  TextColor: 'white',
+  Font: 'bold 16px "Segoe UI", sans-serif',
+  OverlayStyle: 'rgba(0, 0, 0, 0.2)',
+  TextBaseline: 'middle',
+  TextAlign: 'center',
+} as const;

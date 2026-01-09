@@ -59,9 +59,9 @@ export type ShuffledWord = {
   isFirst: boolean;
   isLast: boolean;
   width: string;
-  backgroundImage: string;
-  backgroundPosition: string;
-  backgroundSize: string;
+  drawWidth: number;
+  bgX: number;
+  bgY: number;
 };
 
 export type DragManagerOptions = {

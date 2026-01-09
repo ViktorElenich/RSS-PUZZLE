@@ -1,4 +1,5 @@
 import { GameConstants, MainPageConstants } from '../../core/constants';
+import { drawPuzzlePiece } from '../../utils/canvas-puzzle';
 import { createElement } from '../../utils/dom';
 
 import type { ShuffledWord } from '../../core/types';
@@ -24,11 +25,15 @@ export function createSourceArea(): HTMLElement {
   });
 }
 
-export function renderWordsToContainer(container: HTMLElement, words: ShuffledWord[]): void {
+export function renderWordsToContainer(
+  container: HTMLElement,
+  words: ShuffledWord[], 
+  bgImage: HTMLImageElement,
+): void {
   container.replaceChildren();
 
   for (const item of words) {
-    let cssClass = 'word-piece';
+    let cssClass = MainPageConstants.WordPieceClass;
 
     if (item.isFirst) {
       cssClass += ' puzzle-first';
@@ -36,21 +41,42 @@ export function renderWordsToContainer(container: HTMLElement, words: ShuffledWo
     if (item.isLast) {
       cssClass += ' puzzle-last';
     }
+
+    const canvas = drawPuzzlePiece(
+      item.word,
+      item.drawWidth,
+      bgImage,
+      item.bgX,
+      item.bgY,
+      item.isFirst,
+      item.isLast,
+    );
+
     const wordElement = createElement('div', {
       className: cssClass,
-      text: item.word,
       dataset: { 
         word: item.word,
         index: String(item.originalIndex),
       },
       style: {
-        width: item.width, 
-        backgroundImage: item.backgroundImage,
-        backgroundPosition: item.backgroundPosition,
-        backgroundSize: item.backgroundSize,
+        width: item.width,
       },
       attrs: { draggable: 'true' },
     });
+
+    const canvasRealWidth = canvas.width;
+
+    const scalePercent = (canvasRealWidth / item.drawWidth) * GameConstants.PercentageBase;
+
+    canvas.style.position = 'absolute';
+    canvas.style.top = '-1px';
+    canvas.style.left = '-1px';
+    canvas.style.height = 'calc(100% + 2px)';
+    canvas.style.width = `${scalePercent}%`; 
+    canvas.style.maxWidth = 'none';
+    canvas.style.pointerEvents = 'none';
+
+    wordElement.append(canvas);
     container.append(wordElement);
   }
 }
