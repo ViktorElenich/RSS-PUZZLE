@@ -28,7 +28,7 @@ export function createSourceArea(): HTMLElement {
 export function renderWordsToContainer(
   container: HTMLElement,
   words: ShuffledWord[], 
-  bgImage: HTMLImageElement,
+  bgImage: HTMLImageElement | undefined,
 ): void {
   container.replaceChildren();
 

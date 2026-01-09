@@ -3,7 +3,7 @@ import { MainPageConstants, PuzzleRenderConstants } from '../core/constants';
 export function drawPuzzlePiece(
   word: string,
   width: number,
-  bgImage: HTMLImageElement,
+  bgImage: HTMLImageElement | undefined,
   bgX: number,
   bgY: number,
   isFirst: boolean,
@@ -72,9 +72,14 @@ export function drawPuzzlePiece(
   context.closePath();
   context.clip();
 
-  context.drawImage(bgImage, -bgX, -bgY);
-  context.fillStyle = PuzzleRenderConstants.OverlayStyle;
-  context.fill();
+  if (bgImage) {
+    context.drawImage(bgImage, -bgX, -bgY);
+    context.fillStyle = PuzzleRenderConstants.OverlayStyle;
+    context.fill();
+  } else {
+    context.fillStyle = PuzzleRenderConstants.PlaceholderColor;
+    context.fill();
+  }
   context.stroke();
 
   context.font = PuzzleRenderConstants.Font;
