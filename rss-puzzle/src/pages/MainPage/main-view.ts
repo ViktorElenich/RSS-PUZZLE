@@ -20,13 +20,15 @@ export class MainView {
   private readonly puzzleArea: HTMLElement;
   private readonly sourceArea: HTMLElement;
   private readonly translationHint: HTMLElement;
+  private readonly playAudioBtn: HTMLButtonElement;
+  private readonly hintsWrapper: HTMLElement;
   private levelInfoElement: HTMLElement;
   
   private checkBtn: HTMLButtonElement;
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
-  private translationBtn: HTMLButtonElement;
-  private audioBtn: HTMLButtonElement;
+  private translationToggleBtn: HTMLButtonElement;
+  private audioToggleBtn: HTMLButtonElement;
 
   private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
@@ -34,6 +36,8 @@ export class MainView {
   private currentLevel = 1; 
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
+
+  private isAudioHintEnabled = false;
 
   private draggingElement: DragManager;
 
@@ -69,20 +73,31 @@ export class MainView {
     this.giveUpBtn = this.createButton(MainPageConstants.ButtonGiveUp, 'game-btn-secondary');
     this.continueBtn = this.createButton(
       MainPageConstants.ButtonContinue, 'game-btn-primary hidden');
-    this.translationBtn = createElement('button', {
+    
+    this.translationToggleBtn = createElement('button', {
       className: MainPageConstants.HintButtonClass,
-      text: 'Translation',
       attrs: { type: 'button', title: 'Show translation' },
       on: [['click', this.toggleTranslationHint.bind(this)]],
     });
-    this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
-
-    this.audioBtn = createElement('button', {
-      className: MainPageConstants.HintButtonClass,
-      attrs: { type: 'button', title: 'Play pronunciation' },
-      on: [['click', this.playAudio.bind(this)]],
+    this.translationToggleBtn.innerHTML = MainPageConstants.IconShowTranslation;
+    this.audioToggleBtn = createElement('button', {
+      className: MainPageConstants.HintButtonClass, 
+      attrs: { type: 'button', title: 'Enable/Disable audio hint' },
+      on: [['click', this.toggleAudioHintState.bind(this)]],
     });
-    this.audioBtn.innerHTML = MainPageConstants.IconSpeaker;
+    this.audioToggleBtn.innerHTML = MainPageConstants.IconSpeaker;
+
+    this.playAudioBtn = createElement('button', {
+      className: `play-audio-btn ${MainPageConstants.ClassHidden}`,
+      attrs: { type: 'button', title: 'Play audio' },
+      on: [['click', (): void => { this.playAudio(); }]],
+    });
+    this.playAudioBtn.innerHTML = MainPageConstants.IconSpeaker;
+
+    this.hintsWrapper = createElement('div', { className: 'sentence-hints-row' }, 
+      this.playAudioBtn, 
+      this.translationHint,
+    );
 
     this.checkBtn.disabled = true;  
 
@@ -100,7 +115,7 @@ export class MainView {
 
     const container = createElement('div', { className: 'game-container' },
       controlsBar,
-      this.translationHint,
+      this.hintsWrapper,
       this.puzzleArea,
       this.sourceArea,
       buttonsPanel,
@@ -163,15 +178,16 @@ export class MainView {
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
     this.translationHint.textContent = sentenceData.textExampleTranslate;
     this.translationHint.classList.add(MainPageConstants.ClassHidden);
-    this.translationBtn.classList.remove(MainPageConstants.HintButtonActive);
-    this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
-    this.translationBtn.title = 'Show translation';
+    this.translationToggleBtn.classList.remove(MainPageConstants.HintButtonActive);
+    this.translationToggleBtn.innerHTML = MainPageConstants.IconShowTranslation;
 
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio = undefined;
-      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.playAudioBtn.classList.remove(MainPageConstants.HintButtonActive);
     }
+
+    this.updatePlayBtnVisibility();
 
     highlightActiveRow(this.puzzleArea, this.currentSentenceIndex);
 
@@ -204,6 +220,7 @@ export class MainView {
       if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
         this.toggleTranslationHint();
       }
+      this.updatePlayBtnVisibility(true);
     } 
   }
 
@@ -234,8 +251,9 @@ export class MainView {
       this.checkBtn.classList.add(MainPageConstants.ClassHidden);
       this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
       this.continueBtn.classList.add(MainPageConstants.ClassHidden);
-      this.translationBtn.classList.add(MainPageConstants.ClassHidden);
-      this.audioBtn.classList.add(MainPageConstants.ClassHidden);
+      this.translationToggleBtn.classList.add(MainPageConstants.ClassHidden);
+      this.audioToggleBtn.classList.add(MainPageConstants.ClassHidden);
+      this.playAudioBtn.classList.add(MainPageConstants.ClassHidden);
     }
   }
 
@@ -260,6 +278,7 @@ export class MainView {
     if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
       this.toggleTranslationHint();
     }
+    this.updatePlayBtnVisibility(true);
     this.playAudio();
   }
 
@@ -307,14 +326,12 @@ export class MainView {
     
     if (isHidden) {
       this.translationHint.classList.remove(MainPageConstants.ClassHidden);
-      this.translationBtn.classList.add(MainPageConstants.HintButtonActive);
-      this.translationBtn.innerHTML = MainPageConstants.IconHideTranslation;
-      this.translationBtn.title = 'Hide translation';
+      this.translationToggleBtn.classList.add(MainPageConstants.HintButtonActive);
+      this.translationToggleBtn.innerHTML = MainPageConstants.IconHideTranslation;
     } else {
       this.translationHint.classList.add(MainPageConstants.ClassHidden);
-      this.translationBtn.classList.remove(MainPageConstants.HintButtonActive);
-      this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
-      this.translationBtn.title = 'Show translation';
+      this.translationToggleBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.translationToggleBtn.innerHTML = MainPageConstants.IconShowTranslation;
     }
   }
 
@@ -324,27 +341,46 @@ export class MainView {
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
-      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.playAudioBtn.classList.remove(MainPageConstants.HintButtonActive);
     }
     
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
     const audioUrl = `${MainPageConstants.AudioBaseUrl}${sentenceData.audioExample}`;
 
     this.currentAudio = new Audio(audioUrl);
-
-    this.audioBtn.classList.add(MainPageConstants.HintButtonActive);
+    this.playAudioBtn.classList.add(MainPageConstants.HintButtonActive);
 
     this.currentAudio.addEventListener('ended', () => {
-      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.playAudioBtn.classList.remove(MainPageConstants.HintButtonActive);
       this.currentAudio = undefined;
     });
 
     this.currentAudio.addEventListener('error', () => {
-      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.playAudioBtn.classList.remove(MainPageConstants.HintButtonActive);
       this.currentAudio = undefined;
     });
 
     void this.currentAudio.play();
+  }
+
+  private toggleAudioHintState(): void {
+    this.isAudioHintEnabled = !this.isAudioHintEnabled;
+
+    this.audioToggleBtn.classList.toggle(
+      MainPageConstants.HintButtonActive,
+      this.isAudioHintEnabled,
+    );
+
+    this.updatePlayBtnVisibility();
+  }
+
+  private updatePlayBtnVisibility(forceShow = false): void {
+    if (forceShow) {
+      this.playAudioBtn.classList.remove(MainPageConstants.ClassHidden);
+      return;
+    }
+
+    this.playAudioBtn.classList.toggle(MainPageConstants.ClassHidden, !this.isAudioHintEnabled);
   }
 
   private showContinueButton(): void {
@@ -369,8 +405,8 @@ export class MainView {
 
   private createControlsBar(): HTMLElement {
     const hints = createElement('div', { className: 'hint-buttons' }, 
-      this.translationBtn,
-      this.audioBtn,
+      this.audioToggleBtn,
+      this.translationToggleBtn,
     );
 
     return createElement('div', { className: 'game-controls-bar' }, this.levelInfoElement, hints);
