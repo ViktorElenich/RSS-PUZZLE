@@ -43,12 +43,14 @@ export class DragManager {
 
   private handleDragStart(event: DragEvent): void {
     const target = event.target;
-    if (!(target instanceof HTMLElement) || 
-      !target.classList.contains(MainPageConstants.WordPieceClass)) {
+    if (!(target instanceof HTMLElement)) { return; }
+    
+    const wordPiece = target.closest(`.${MainPageConstants.WordPieceClass}`);
+    if (!wordPiece || !(wordPiece instanceof HTMLElement)) {
       return;
     }
 
-    this.draggingElement = target;
+    this.draggingElement = wordPiece;
 
     setTimeout(() => {
       if (this.draggingElement) {
@@ -89,15 +91,16 @@ export class DragManager {
 
   private handleTouchStart(event: TouchEvent): void {
     const touch = event.touches[0];
-
     const target = document.elementFromPoint(touch.clientX, touch.clientY);
 
-    if (!(target instanceof HTMLElement) || 
-      !target.classList.contains(MainPageConstants.WordPieceClass)) {
+    if (!(target instanceof HTMLElement)) { return; }
+    
+    const wordPiece = target.closest(`.${MainPageConstants.WordPieceClass}`);
+    if (!wordPiece || !(wordPiece instanceof HTMLElement)) {
       return;
     }
 
-    this.touchDragItem = target;
+    this.touchDragItem = wordPiece;
     this.initialX = touch.clientX;
     this.initialY = touch.clientY;
     this.isDragProcess = false;

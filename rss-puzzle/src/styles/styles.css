@@ -41,7 +41,6 @@ select {
 .hidden {
   display: none !important;
 }
-/*  */
 
 /* Login-Page */
 .login-page {
@@ -150,7 +149,6 @@ select {
 .login-button:active {
   transform: translateY(1px);
 }
-/*  */
 
 /* Message of Mistake */
 .input-error {
@@ -177,7 +175,6 @@ select {
   box-shadow: none;
   filter: none;
 }
-/*  */
 
 /* Header */
 .header {
@@ -207,7 +204,6 @@ select {
 .logout-button:hover {
   background-color: #c53030;
 }
-/*  */
 
 /* Start Page */
 .start-page {
@@ -293,7 +289,6 @@ select {
     transform: translateY(0);
   }
 }
-/*  */
 
 /* Greeting Message */
 .greeting {
@@ -315,7 +310,6 @@ select {
     transform: translateY(0);
   }
 }
-/*  */
 
 /* Main Page */
 .main-page {
@@ -332,8 +326,8 @@ select {
 
 .game-container {
   width: 100%;
-  max-width: 1000px;
-  padding: 0 20px;
+  max-width: 1200px;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -354,24 +348,19 @@ select {
   gap: 16px;
 }
 
-.hint-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-/* Result Blocks */
-
+/* Puzzle Area */
 .puzzle-area {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 2px;
   background: rgba(0, 0, 0, 0.2);
-  padding: 20px;
+  padding: 10px;
   border-radius: 12px;
   min-height: 400px;
 }
 
 .puzzle-row {
+  position: relative;
   display: flex;
   width: 100%;
   height: 45px;
@@ -379,8 +368,8 @@ select {
   border-radius: 6px;
   border: 1px dashed rgba(255, 255, 255, 0.2);
   align-items: center; 
-  padding: 0 5px;
-  gap: 0;
+  padding: 0; 
+  margin: 0;
   transition: all var(--anim-duration);
 }
 
@@ -388,15 +377,15 @@ select {
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid #4fd1c5;
   box-shadow: 0 0 10px rgba(79, 209, 197, 0.2);
+  z-index: 5;
 }
 
-/* Source Block */
-
+/* Source Area */
 .source-area {
   min-height: 60px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px; 
   padding: 16px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
@@ -405,32 +394,42 @@ select {
 }
 
 .source-area .word-piece {
-  border-radius: 4px;
-  width: auto !important; 
+  margin: 5px !important;
+  height: 45px;
+  position: relative;
+  flex-shrink: 0;
 }
 
-/* */
-
-/* Word Card */
+/* --- Word Card (Canvas Container) --- */
 
 .word-piece {
-  position: relative;
+  position: relative; 
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 15px 0 25px;
-  height: 40px;
-  background-color: var(--card-bg);
-  color: var(--card-text);
-  border: 1px solid var(--card-border); 
-  font-size: 1rem;
-  font-weight: 500;
+  height: 45px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important; 
+  border-radius: 0 !important;
+  overflow: visible !important; 
+  z-index: 10;
+  color: transparent !important; 
+  font-size: 0;
   cursor: grab;
   user-select: none;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   animation: popIn var(--anim-duration) ease-out;
-  transition: transform 0.1s, background-color 0.2s, opacity 0.2s;
-  margin: 4px;
+  transition: width 0.1s, transform 0.1s;
+}
+
+.word-piece canvas {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.word-piece::before,
+.word-piece::after {
+  content: none !important;
+  display: none !important;
 }
 
 .word-piece:active {
@@ -438,60 +437,14 @@ select {
 }
 
 .word-piece.dragging {
-  opacity: 0.5;
-  border: 2px dashed #4fd1c5;
-  background-color: #ebf8ff;
-  transform: scale(1.05);
+  opacity: 0.8;
   z-index: 1000;
+  transform: scale(1.05);
+  pointer-events: none;
 }
 
-.word-piece::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: -7px;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: #1a202c;
-  box-shadow: inset -1px 0 0 var(--card-border); 
-  z-index: 2;
-}
-
-.word-piece::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  right: -8px;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background-color: inherit;
-  border: 1px solid var(--card-bg);
-  z-index: 3;
-}
-
-.puzzle-row .word-piece {
-  margin: 0;
-  border-radius: 0;
-  cursor: pointer;
-  justify-content: center;
-}
-
-.puzzle-row .word-piece.puzzle-first {
-  padding-left: 15px; 
-}
-.puzzle-row .word-piece.puzzle-first::before {
-  display: none;
-}
-
-.puzzle-row .word-piece.puzzle-last {
-  margin-right: 0;
-}
-.puzzle-row .word-piece.puzzle-last::after {
-  display: none;
+.word-piece.dragging canvas {
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.5));
 }
 
 .word-piece:hover {
@@ -500,42 +453,23 @@ select {
 
 .puzzle-row .word-piece:hover {
   transform: none;
-  box-shadow: none;
-  background-color: #e2e8f0; 
-  border-color: #cbd5e0;
+  background-color: transparent !important;
+  border-color: transparent !important;
 }
 
 .puzzle-row.drag-over {
   background-color: rgba(255, 255, 255, 0.15);
-} 
+}
 
 /* Correct/Incorrect */
-.word-piece.success {
-  border-color: #48bb78 !important;
-  color: #2f855a !important;
-  box-shadow: 0 0 8px rgba(72, 187, 120, 0.4) !important;
+
+.word-piece.success canvas {
+  filter: drop-shadow(0 0 2px #48bb78) drop-shadow(0 0 1px #48bb78);
 }
 
-.word-piece.success::after {
-  border-color: #48bb78 !important;
+.word-piece.error canvas {
+  filter: drop-shadow(0 0 2px #f56565) drop-shadow(0 0 1px #f56565);
 }
-.word-piece.success::before {
-  box-shadow: inset -1px 0 0 #48bb78 !important;
-}
-
-.word-piece.error {
-  border-color: #f56565 !important;
-  color: #c53030 !important;
-  box-shadow: 0 0 8px rgba(245, 101, 101, 0.4) !important;
-}
-
-.word-piece.error::after {
-  border-color: #f56565 !important;
-}
-.word-piece.error::before {
-  box-shadow: inset -1px 0 0 #f56565 !important;
-}
-/*  */
 
 @keyframes popIn {
   from {
@@ -547,8 +481,8 @@ select {
     transform: scale(1);
   }
 }
-/*  */
 
+/* Game Buttons */
 .game-buttons {
   display: flex;
   justify-content: center;
@@ -568,15 +502,6 @@ select {
 }
 
 .game-btn:disabled {
-  background-color: #cbd5e0;
-  color: #718096;
-  cursor: not-allowed;
-  opacity: 0.7;
-  transform: none !important;
-}
-
-.game-btn:disabled,
-.game-btn:disabled:hover {
   background-color: #cbd5e0;
   color: #718096;
   cursor: not-allowed;
@@ -602,18 +527,7 @@ select {
   background-color: #2d3748;
 }
 
-.hidden {
-  display: none !important;
-}
-
-.game-controls-bar { 
-  display: flex; 
-  justify-content: space-between; 
-  color: #ccc; 
-}
-/*  */
-
-/* Hints */
+/* Hints Controls */
 .hint-buttons {
   display: flex;
   gap: 8px;
@@ -667,9 +581,7 @@ select {
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  opacity: 0;
 }
-/*  */
 
 /* Audio Animation */
 @keyframes pulse-audio {
@@ -686,9 +598,8 @@ select {
     box-shadow: 0 0 0 0 rgba(79, 209, 197, 0);
   }
 }
-/*  */
 
-/* Container Hints */
+/* Container Hints Row */
 .sentence-hints-row {
   display: flex;
   justify-content: center;
