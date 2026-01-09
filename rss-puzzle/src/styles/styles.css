@@ -640,10 +640,10 @@ select {
 }
 
 .hint-btn.active {
-  background: rgba(79, 209, 197, 0.2);
+  animation: pulse-audio 1.5s infinite;
+  background-color: rgba(79, 209, 197, 0.2);
   border-color: #4fd1c5;
   color: #4fd1c5;
-  box-shadow: 0 0 10px rgba(79, 209, 197, 0.2);
 }
 
 .hint-btn svg {
@@ -668,5 +668,22 @@ select {
   pointer-events: none;
   visibility: hidden;
   opacity: 0;
+}
+/*  */
+
+/* Audio Animation */
+@keyframes pulse-audio {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(79, 209, 197, 0.7);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 6px rgba(79, 209, 197, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(79, 209, 197, 0);
+  }
 }
 /*  */

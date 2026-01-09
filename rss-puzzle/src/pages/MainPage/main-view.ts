@@ -30,6 +30,7 @@ export class MainView {
 
   private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
+  private currentAudio: HTMLAudioElement | undefined = undefined;
   private currentLevel = 1; 
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
@@ -165,6 +166,12 @@ export class MainView {
     this.translationBtn.classList.remove(MainPageConstants.HintButtonActive);
     this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
     this.translationBtn.title = 'Show translation';
+
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio = undefined;
+      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+    }
 
     highlightActiveRow(this.puzzleArea, this.currentSentenceIndex);
 
@@ -313,12 +320,31 @@ export class MainView {
 
   private playAudio(): void {
     if (!this.currentRoundData) { return; }
+
+    if (this.currentAudio) {
+      this.currentAudio.pause();
+      this.currentAudio.currentTime = 0;
+      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+    }
     
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
     const audioUrl = `${MainPageConstants.AudioBaseUrl}${sentenceData.audioExample}`;
 
-    const audio = new Audio(audioUrl);
-    void audio.play();
+    this.currentAudio = new Audio(audioUrl);
+
+    this.audioBtn.classList.add(MainPageConstants.HintButtonActive);
+
+    this.currentAudio.addEventListener('ended', () => {
+      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.currentAudio = undefined;
+    });
+
+    this.currentAudio.addEventListener('error', () => {
+      this.audioBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.currentAudio = undefined;
+    });
+
+    void this.currentAudio.play();
   }
 
   private showContinueButton(): void {
