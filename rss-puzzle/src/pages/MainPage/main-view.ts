@@ -29,6 +29,7 @@ export class MainView {
   private continueBtn: HTMLButtonElement;
   private translationToggleBtn: HTMLButtonElement;
   private audioToggleBtn: HTMLButtonElement;
+  private pictureToggleBtn: HTMLButtonElement;
 
   private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
@@ -39,6 +40,7 @@ export class MainView {
   private currentSentenceIndex = 0;
 
   private isAudioHintEnabled = false;
+  private isPictureHintEnabled = false;
 
   private draggingElement: DragManager;
 
@@ -81,12 +83,20 @@ export class MainView {
       on: [['click', this.toggleTranslationHint.bind(this)]],
     });
     this.translationToggleBtn.innerHTML = MainPageConstants.IconShowTranslation;
+
     this.audioToggleBtn = createElement('button', {
       className: MainPageConstants.HintButtonClass, 
       attrs: { type: 'button', title: 'Enable/Disable audio hint' },
       on: [['click', this.toggleAudioHintState.bind(this)]],
     });
     this.audioToggleBtn.innerHTML = MainPageConstants.IconSpeaker;
+
+    this.pictureToggleBtn = createElement('button', {
+      className: MainPageConstants.HintButtonClass,
+      attrs: { type: 'button', title: 'Show/Hide background picture' },
+      on: [['click', this.togglePictureHint.bind(this)]],
+    });
+    this.pictureToggleBtn.innerHTML = MainPageConstants.IconPicture;
 
     this.playAudioBtn = createElement('button', {
       className: `play-audio-btn ${MainPageConstants.ClassHidden}`,
@@ -199,11 +209,13 @@ export class MainView {
 
     if (!this.currentBackgroundImage) { return; }
 
-    renderWordsToContainer(this.sourceArea, shuffled, this.currentBackgroundImage);
+    const bgImageToRender = this.isPictureHintEnabled ? this.currentBackgroundImage : undefined;
+
+    renderWordsToContainer(this.sourceArea, shuffled, bgImageToRender);
     this.updateCheckButtonState();
   }
 
-  private handleCheck(): void {
+  private handleCheck(): void { 
     if (!this.currentRoundData) { return; }
 
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
@@ -222,6 +234,15 @@ export class MainView {
 
     if (!hasError) {
       this.showContinueButton();
+      if (!this.isPictureHintEnabled && this.currentBackgroundImage) {
+        const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
+        if (currentRow instanceof HTMLElement) {
+          const correctWords = this.generateWordData();
+          renderWordsToContainer(currentRow, correctWords, this.currentBackgroundImage);
+          const successResults = correctWords.map(() => true);
+          setValidationStyles(this.puzzleArea, this.currentSentenceIndex, successResults);
+        }
+      }
       if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
         this.toggleTranslationHint();
       }
@@ -430,6 +451,19 @@ export class MainView {
     });
   }
 
+  private togglePictureHint(): void {
+    this.isPictureHintEnabled = !this.isPictureHintEnabled;
+
+    this.pictureToggleBtn.classList.toggle(
+      MainPageConstants.HintButtonActive, 
+      this.isPictureHintEnabled,
+    );
+
+    if (this.currentRoundData) {
+      this.renderCurrentSentence();
+    }
+  }
+
   private showContinueButton(): void {
     this.checkBtn.classList.add(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
@@ -454,6 +488,7 @@ export class MainView {
     const hints = createElement('div', { className: 'hint-buttons' }, 
       this.audioToggleBtn,
       this.translationToggleBtn,
+      this.pictureToggleBtn,
     );
 
     return createElement('div', { className: 'game-controls-bar' }, this.levelInfoElement, hints);
