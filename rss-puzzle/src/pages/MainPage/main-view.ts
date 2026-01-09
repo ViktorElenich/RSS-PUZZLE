@@ -9,8 +9,9 @@ import {
 } from './main-ui';
 import { fetchLevelData } from '../../api/api';
 import { PageIds, MainPageConstants, GameConstants } from '../../core/constants';
+import { GameSettings } from '../../services/game-settings.service';
 import { createElement } from '../../utils/dom';
-import { DragManager } from '../../utils/drag-manager';
+import { DragManager } from '../../utils/drag-manager'; 
 import { shuffleArray } from '../../utils/shuffle';
 
 import type { LevelCollection, Round, ShuffledWord } from '../../core/types';
@@ -27,6 +28,7 @@ export class MainView {
   private checkBtn: HTMLButtonElement;
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
+
   private translationToggleBtn: HTMLButtonElement;
   private audioToggleBtn: HTMLButtonElement;
   private pictureToggleBtn: HTMLButtonElement;
@@ -35,12 +37,12 @@ export class MainView {
   private currentRoundData: Round | undefined = undefined;
   private currentAudio: HTMLAudioElement | undefined = undefined;
   private currentBackgroundImage: HTMLImageElement | undefined = undefined;
+
   private currentLevel = 1; 
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
 
-  private isAudioHintEnabled = false;
-  private isPictureHintEnabled = false;
+  private settings = new GameSettings();
 
   private draggingElement: DragManager;
 
@@ -97,9 +99,12 @@ export class MainView {
       on: [['click', this.togglePictureHint.bind(this)]],
     });
     this.pictureToggleBtn.innerHTML = MainPageConstants.IconPicture;
+    if (this.settings.isPictureEnabled) {
+      this.pictureToggleBtn.classList.add(MainPageConstants.HintButtonActive);
+    }
 
     this.playAudioBtn = createElement('button', {
-      className: `play-audio-btn ${MainPageConstants.ClassHidden}`,
+      className: 'play-audio-btn',
       attrs: { type: 'button', title: 'Play audio' },
       on: [['click', (): void => { this.playAudio(); }]],
     });
@@ -186,13 +191,31 @@ export class MainView {
   }
 
   private renderCurrentSentence(): void {
-    if (!this.currentRoundData) { return; }
+    if (!this.currentRoundData || !this.currentBackgroundImage) { return; }
 
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+
+    if (this.settings.isTranslationEnabled) {
+      this.translationHint.classList.remove(MainPageConstants.ClassHidden);
+      this.translationToggleBtn.classList.add(MainPageConstants.HintButtonActive);
+      this.translationToggleBtn.innerHTML = MainPageConstants.IconHideTranslation;
+    } else {
+      this.translationHint.classList.add(MainPageConstants.ClassHidden);
+      this.translationToggleBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.translationToggleBtn.innerHTML = MainPageConstants.IconShowTranslation;
+    }
+
     this.translationHint.textContent = sentenceData.textExampleTranslate;
-    this.translationHint.classList.add(MainPageConstants.ClassHidden);
-    this.translationToggleBtn.classList.remove(MainPageConstants.HintButtonActive);
-    this.translationToggleBtn.innerHTML = MainPageConstants.IconShowTranslation;
+
+    this.audioToggleBtn.classList.toggle(
+      MainPageConstants.HintButtonActive, 
+      this.settings.isAudioEnabled,
+    );
+
+    this.pictureToggleBtn.classList.toggle(
+      MainPageConstants.HintButtonActive, 
+      this.settings.isPictureEnabled,
+    );
 
     if (this.currentAudio) {
       this.currentAudio.pause();
@@ -207,9 +230,9 @@ export class MainView {
     const wordObjects = this.generateWordData();
     const shuffled: ShuffledWord[] = shuffleArray<ShuffledWord>(wordObjects);
 
-    if (!this.currentBackgroundImage) { return; }
 
-    const bgImageToRender = this.isPictureHintEnabled ? this.currentBackgroundImage : undefined;
+    const bgImageToRender = 
+      this.settings.isPictureEnabled ? this.currentBackgroundImage : undefined;
 
     renderWordsToContainer(this.sourceArea, shuffled, bgImageToRender);
     this.updateCheckButtonState();
@@ -234,18 +257,16 @@ export class MainView {
 
     if (!hasError) {
       this.showContinueButton();
-      if (!this.isPictureHintEnabled && this.currentBackgroundImage) {
+      if (!this.settings.isPictureEnabled && this.currentBackgroundImage) {
         const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
         if (currentRow instanceof HTMLElement) {
-          const correctWords = this.generateWordData();
+          const correctWords = this.generateWordData(); 
           renderWordsToContainer(currentRow, correctWords, this.currentBackgroundImage);
           const successResults = correctWords.map(() => true);
           setValidationStyles(this.puzzleArea, this.currentSentenceIndex, successResults);
         }
       }
-      if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
-        this.toggleTranslationHint();
-      }
+      this.translationHint.classList.remove(MainPageConstants.ClassHidden);
       this.updatePlayBtnVisibility(true);
     } 
   }
@@ -303,9 +324,8 @@ export class MainView {
     setValidationStyles(this.puzzleArea, this.currentSentenceIndex, successResults);
 
     this.showContinueButton();
-    if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
-      this.toggleTranslationHint();
-    }
+    this.translationHint.classList.remove(MainPageConstants.ClassHidden);
+
     this.updatePlayBtnVisibility(true);
     this.playAudio();
   }
@@ -370,9 +390,10 @@ export class MainView {
   }
 
   private toggleTranslationHint(): void {
-    const isHidden = this.translationHint.classList.contains(MainPageConstants.ClassHidden);
+    this.settings.isTranslationEnabled = !this.settings.isTranslationEnabled;
+    this.settings.save();
     
-    if (isHidden) {
+    if (this.settings.isTranslationEnabled) {
       this.translationHint.classList.remove(MainPageConstants.ClassHidden);
       this.translationToggleBtn.classList.add(MainPageConstants.HintButtonActive);
       this.translationToggleBtn.innerHTML = MainPageConstants.IconHideTranslation;
@@ -412,23 +433,21 @@ export class MainView {
   }
 
   private toggleAudioHintState(): void {
-    this.isAudioHintEnabled = !this.isAudioHintEnabled;
+    this.settings.isAudioEnabled = !this.settings.isAudioEnabled;
+    this.settings.save();
 
     this.audioToggleBtn.classList.toggle(
-      MainPageConstants.HintButtonActive,
-      this.isAudioHintEnabled,
+      MainPageConstants.HintButtonActive, 
+      this.settings.isAudioEnabled,
     );
 
     this.updatePlayBtnVisibility();
   }
 
   private updatePlayBtnVisibility(forceShow = false): void {
-    if (forceShow) {
-      this.playAudioBtn.classList.remove(MainPageConstants.ClassHidden);
-      return;
+    if (this.settings.isAudioEnabled || forceShow) {
+      this.playAudio();
     }
-
-    this.playAudioBtn.classList.toggle(MainPageConstants.ClassHidden, !this.isAudioHintEnabled);
   }
 
   private async loadRoundImage(): Promise<void> {
@@ -452,11 +471,12 @@ export class MainView {
   }
 
   private togglePictureHint(): void {
-    this.isPictureHintEnabled = !this.isPictureHintEnabled;
+    this.settings.isPictureEnabled = !this.settings.isPictureEnabled;
+    this.settings.save();
 
     this.pictureToggleBtn.classList.toggle(
       MainPageConstants.HintButtonActive, 
-      this.isPictureHintEnabled,
+      this.settings.isPictureEnabled,
     );
 
     if (this.currentRoundData) {
