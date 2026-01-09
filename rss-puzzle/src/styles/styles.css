@@ -687,3 +687,48 @@ select {
   }
 }
 /*  */
+
+/* Container Hints */
+.sentence-hints-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.play-audio-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.play-audio-btn:hover {
+  background: rgba(79, 209, 197, 0.2);
+  border-color: #4fd1c5;
+  color: #4fd1c5;
+  transform: scale(1.1);
+}
+
+.play-audio-btn.active {
+  animation: pulse-audio 1.5s infinite;
+  border-color: #4fd1c5;
+  color: #4fd1c5;
+}
+
+.play-audio-btn svg {
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
