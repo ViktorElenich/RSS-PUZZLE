@@ -26,6 +26,7 @@ export class MainView {
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
   private translationBtn: HTMLButtonElement;
+  private audioBtn: HTMLButtonElement;
 
   private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
@@ -74,6 +75,13 @@ export class MainView {
       on: [['click', this.toggleTranslationHint.bind(this)]],
     });
     this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
+
+    this.audioBtn = createElement('button', {
+      className: MainPageConstants.HintButtonClass,
+      attrs: { type: 'button', title: 'Play pronunciation' },
+      on: [['click', this.playAudio.bind(this)]],
+    });
+    this.audioBtn.innerHTML = MainPageConstants.IconSpeaker;
 
     this.checkBtn.disabled = true;  
 
@@ -220,6 +228,7 @@ export class MainView {
       this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
       this.continueBtn.classList.add(MainPageConstants.ClassHidden);
       this.translationBtn.classList.add(MainPageConstants.ClassHidden);
+      this.audioBtn.classList.add(MainPageConstants.ClassHidden);
     }
   }
 
@@ -244,6 +253,7 @@ export class MainView {
     if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
       this.toggleTranslationHint();
     }
+    this.playAudio();
   }
 
   private generateWordData(): ShuffledWord[] {
@@ -301,6 +311,16 @@ export class MainView {
     }
   }
 
+  private playAudio(): void {
+    if (!this.currentRoundData) { return; }
+    
+    const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+    const audioUrl = `${MainPageConstants.AudioBaseUrl}${sentenceData.audioExample}`;
+
+    const audio = new Audio(audioUrl);
+    void audio.play();
+  }
+
   private showContinueButton(): void {
     this.checkBtn.classList.add(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
@@ -322,7 +342,10 @@ export class MainView {
   }
 
   private createControlsBar(): HTMLElement {
-    const hints = createElement('div', { className: 'hint-buttons' }, this.translationBtn);
+    const hints = createElement('div', { className: 'hint-buttons' }, 
+      this.translationBtn,
+      this.audioBtn,
+    );
 
     return createElement('div', { className: 'game-controls-bar' }, this.levelInfoElement, hints);
   }
