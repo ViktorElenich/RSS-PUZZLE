@@ -19,11 +19,13 @@ export class MainView {
   private readonly element: HTMLElement;
   private readonly puzzleArea: HTMLElement;
   private readonly sourceArea: HTMLElement;
+  private readonly translationHint: HTMLElement;
   private levelInfoElement: HTMLElement;
   
   private checkBtn: HTMLButtonElement;
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
+  private translationBtn: HTMLButtonElement;
 
   private levelCollection: LevelCollection | undefined = undefined; 
   private currentRoundData: Round | undefined = undefined;
@@ -36,8 +38,6 @@ export class MainView {
   constructor() {
     this.puzzleArea = createPuzzleArea();
     this.sourceArea = createSourceArea();
-
-    this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
 
     this.draggingElement = new DragManager({
       puzzleArea: this.puzzleArea,
@@ -54,6 +54,12 @@ export class MainView {
       },
     });
 
+    this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
+
+    this.translationHint = createElement('div', { 
+      className: `${MainPageConstants.HintTranslationClass} ${MainPageConstants.ClassHidden}`, 
+    });
+
     this.puzzleArea.addEventListener('click', this.handleWordClick.bind(this));
     this.sourceArea.addEventListener('click', this.handleWordClick.bind(this));
 
@@ -61,6 +67,13 @@ export class MainView {
     this.giveUpBtn = this.createButton(MainPageConstants.ButtonGiveUp, 'game-btn-secondary');
     this.continueBtn = this.createButton(
       MainPageConstants.ButtonContinue, 'game-btn-primary hidden');
+    this.translationBtn = createElement('button', {
+      className: MainPageConstants.HintButtonClass,
+      text: 'Translation',
+      attrs: { type: 'button', title: 'Show translation' },
+      on: [['click', this.toggleTranslationHint.bind(this)]],
+    });
+    this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
 
     this.checkBtn.disabled = true;  
 
@@ -78,6 +91,7 @@ export class MainView {
 
     const container = createElement('div', { className: 'game-container' },
       controlsBar,
+      this.translationHint,
       this.puzzleArea,
       this.sourceArea,
       buttonsPanel,
@@ -137,6 +151,13 @@ export class MainView {
   private renderCurrentSentence(): void {
     if (!this.currentRoundData) { return; }
 
+    const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+    this.translationHint.textContent = sentenceData.textExampleTranslate;
+    this.translationHint.classList.add(MainPageConstants.ClassHidden);
+    this.translationBtn.classList.remove(MainPageConstants.HintButtonActive);
+    this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
+    this.translationBtn.title = 'Show translation';
+
     highlightActiveRow(this.puzzleArea, this.currentSentenceIndex);
 
     const wordObjects = this.generateWordData();
@@ -165,6 +186,9 @@ export class MainView {
 
     if (!hasError) {
       this.showContinueButton();
+      if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
+        this.toggleTranslationHint();
+      }
     } 
   }
 
@@ -195,6 +219,7 @@ export class MainView {
       this.checkBtn.classList.add(MainPageConstants.ClassHidden);
       this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
       this.continueBtn.classList.add(MainPageConstants.ClassHidden);
+      this.translationBtn.classList.add(MainPageConstants.ClassHidden);
     }
   }
 
@@ -216,6 +241,9 @@ export class MainView {
     setValidationStyles(this.puzzleArea, this.currentSentenceIndex, successResults);
 
     this.showContinueButton();
+    if (this.translationHint.classList.contains(MainPageConstants.ClassHidden)) {
+      this.toggleTranslationHint();
+    }
   }
 
   private generateWordData(): ShuffledWord[] {
@@ -257,6 +285,22 @@ export class MainView {
     }
   }
 
+  private toggleTranslationHint(): void {
+    const isHidden = this.translationHint.classList.contains(MainPageConstants.ClassHidden);
+    
+    if (isHidden) {
+      this.translationHint.classList.remove(MainPageConstants.ClassHidden);
+      this.translationBtn.classList.add(MainPageConstants.HintButtonActive);
+      this.translationBtn.innerHTML = MainPageConstants.IconHideTranslation;
+      this.translationBtn.title = 'Hide translation';
+    } else {
+      this.translationHint.classList.add(MainPageConstants.ClassHidden);
+      this.translationBtn.classList.remove(MainPageConstants.HintButtonActive);
+      this.translationBtn.innerHTML = MainPageConstants.IconShowTranslation;
+      this.translationBtn.title = 'Show translation';
+    }
+  }
+
   private showContinueButton(): void {
     this.checkBtn.classList.add(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
@@ -278,7 +322,7 @@ export class MainView {
   }
 
   private createControlsBar(): HTMLElement {
-    const hints = createElement('div', { className: 'hint-buttons', text: 'Hints: 🎵 🔤' });
+    const hints = createElement('div', { className: 'hint-buttons' }, this.translationBtn);
 
     return createElement('div', { className: 'game-controls-bar' }, this.levelInfoElement, hints);
   }

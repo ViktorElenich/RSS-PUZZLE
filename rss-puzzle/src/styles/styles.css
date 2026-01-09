@@ -612,3 +612,61 @@ select {
   color: #ccc; 
 }
 /*  */
+
+/* Hints */
+.hint-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.hint-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.hint-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.hint-btn.active {
+  background: rgba(79, 209, 197, 0.2);
+  border-color: #4fd1c5;
+  color: #4fd1c5;
+  box-shadow: 0 0 10px rgba(79, 209, 197, 0.2);
+}
+
+.hint-btn svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.hint-translation {
+  text-align: center;
+  font-size: 1.1rem;
+  color: #edf2f7;
+  min-height: 28px;
+  padding: 8px;
+  font-style: italic;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.3s ease;
+}
+
+.hint-translation.hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+}
+/*  */
