@@ -288,14 +288,32 @@ export class MainView {
     const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
     const segments: string[] = sentenceData.textExample.split(' ');
     const totalLettersCount = segments.reduce((accumulator, word) => accumulator + word.length, 0);
+    const imageSource = 
+      `${MainPageConstants.ImagesBaseUrl}${this.currentRoundData.levelData.imageSrc}`;
 
-    return segments.map((word, index) => ({
-      word,
-      originalIndex: index,
-      isFirst: index === 0,
-      isLast: index === segments.length - 1,
-      width: `${(word.length / totalLettersCount) * GameConstants.PercentageBase}%`,
-    }));
+    let currentXOffset = 0;
+    const pixelsPerPercent = MainPageConstants.PuzzleWidthPx / GameConstants.PercentageBase;
+
+    return segments.map((word, index) => {
+      const widthPercent = (word.length / totalLettersCount) * GameConstants.PercentageBase;
+      const widthString = `${widthPercent}%`;
+
+      const bgPosY = `-${this.currentSentenceIndex * MainPageConstants.PuzzleRowHeightPx}px`;
+      const bgPosX = `-${currentXOffset * pixelsPerPercent}px`;
+
+      currentXOffset += widthPercent;
+
+      return {
+        word,
+        originalIndex: index,
+        isFirst: index === 0,
+        isLast: index === segments.length - 1,
+        width: widthString,
+        backgroundImage: `url(${imageSource})`,
+        backgroundPosition: `${bgPosX} ${bgPosY}`,
+        backgroundSize: '1000px auto',
+      };
+    });
   }
 
   private updateCheckButtonState(): void {

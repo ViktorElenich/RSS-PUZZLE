@@ -45,6 +45,9 @@ export function renderWordsToContainer(container: HTMLElement, words: ShuffledWo
       },
       style: {
         width: item.width, 
+        backgroundImage: item.backgroundImage,
+        backgroundPosition: item.backgroundPosition,
+        backgroundSize: item.backgroundSize,
       },
       attrs: { draggable: 'true' },
     });
