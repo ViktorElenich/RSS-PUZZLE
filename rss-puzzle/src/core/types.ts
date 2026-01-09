@@ -71,3 +71,9 @@ export type DragManagerOptions = {
   onUpdate: () => void;
   onValidationClear: () => void;
 };
+
+export type AppSettings = {
+  audio?: boolean;
+  translation?: boolean;
+  picture?: boolean;
+};
