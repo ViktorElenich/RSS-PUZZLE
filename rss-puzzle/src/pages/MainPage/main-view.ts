@@ -10,6 +10,7 @@ import {
 import { fetchLevelData } from '../../api/api';
 import { PageIds, MainPageConstants, GameConstants } from '../../core/constants';
 import { createElement } from '../../utils/dom';
+import { DragManager } from '../../utils/drag-manager';
 import { shuffleArray } from '../../utils/shuffle';
 
 import type { LevelCollection, Round, ShuffledWord } from '../../core/types';
@@ -30,11 +31,28 @@ export class MainView {
   private currentRoundIndex = 0;
   private currentSentenceIndex = 0;
 
+  private draggingElement: DragManager;
+
   constructor() {
     this.puzzleArea = createPuzzleArea();
     this.sourceArea = createSourceArea();
 
     this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
+
+    this.draggingElement = new DragManager({
+      puzzleArea: this.puzzleArea,
+      sourceArea: this.sourceArea,
+      getCurrentRow: (): HTMLElement | undefined => {
+        const row = this.puzzleArea.children[this.currentSentenceIndex];
+        return row instanceof HTMLElement ? row : undefined;
+      },
+      onUpdate: (): void => {
+        this.updateCheckButtonState();
+      },
+      onValidationClear: (): void => {
+        clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
+      },
+    });
 
     this.puzzleArea.addEventListener('click', this.handleWordClick.bind(this));
     this.sourceArea.addEventListener('click', this.handleWordClick.bind(this));
@@ -90,8 +108,7 @@ export class MainView {
     const wordElement = target.closest('.word-piece');
     if (!wordElement || !(wordElement instanceof HTMLElement)) { return; }
 
-    const currentRow = this.puzzleArea.querySelector(`[data-row="${this.currentSentenceIndex}"]`);
-    if (!currentRow) { return; }
+    const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
 
     if (this.sourceArea.contains(wordElement)) {
       currentRow.append(wordElement);
@@ -188,8 +205,8 @@ export class MainView {
 
     const correctWords = this.generateWordData();
 
-    const currentRow = this.puzzleArea.querySelector(`[data-row="${this.currentSentenceIndex}"]`);
-    if (!currentRow || !(currentRow instanceof HTMLElement)) {return;}
+    const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
+    if (!(currentRow instanceof HTMLElement)) {return;}
 
     renderWordsToContainer(currentRow, correctWords);
 

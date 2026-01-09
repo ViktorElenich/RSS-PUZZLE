@@ -46,6 +46,7 @@ export function renderWordsToContainer(container: HTMLElement, words: ShuffledWo
       style: {
         width: item.width, 
       },
+      attrs: { draggable: 'true' },
     });
     container.append(wordElement);
   }
@@ -89,9 +90,6 @@ export function setValidationStyles(
 
   wordElements.forEach((element, index) => {
     const isCorrect = results[index];
-    
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (isCorrect === undefined) { return; }
 
     if (isCorrect) {
       element.classList.add(MainPageConstants.ClassSuccess);
@@ -111,4 +109,21 @@ export function clearValidationStyles(puzzleArea: HTMLElement, rowIndex: number)
   wordElements.forEach((element) => {
     element.classList.remove(MainPageConstants.ClassSuccess, MainPageConstants.ClassError);
   });
+}
+
+export function getDragAfterElement(container: HTMLElement, x: number): HTMLElement | undefined {
+  const draggableElements = 
+    [...container.querySelectorAll(`.word-piece:not(.${MainPageConstants.ClassDragging})`)];
+
+  return draggableElements.reduce<{ offset: number; element: HTMLElement | undefined }>(
+    (closest, child) => {
+      if (!(child instanceof HTMLElement)) {return closest;}
+
+      const box = child.getBoundingClientRect();
+      const offset = x - box.left - box.width / 2;
+
+      return offset < 0 && offset > closest.offset ? { offset: offset, element: child } : closest;
+    },
+    { offset: Number.NEGATIVE_INFINITY, element: undefined },
+  ).element;
 }
