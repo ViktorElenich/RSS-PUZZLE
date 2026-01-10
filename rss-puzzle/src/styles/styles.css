@@ -643,3 +643,52 @@ select {
   height: 18px;
   pointer-events: none;
 }
+
+/* Select */
+.level-selectors {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.game-select {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.game-select:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.game-select:focus {
+  border-color: #4fd1c5;
+  box-shadow: 0 0 0 2px rgba(79, 209, 197, 0.2);
+}
+
+.game-select option {
+  background-color: #2d3748;
+  color: #fff;
+}
+
+.selector-label {
+  font-size: 0.9rem;
+  color: #a0aec0;
+  font-weight: 600;
+  margin-right: 4px;
+}
+
+.selector-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/*  */

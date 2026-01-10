@@ -70,6 +70,7 @@ export const GameConstants = {
   TotalSentences: 10,
   PercentageBase: 100,
   Divider: 2,
+  TotalLevels: 6,
 } as const;
 
 export const PuzzleRenderConstants = {
