@@ -77,3 +77,8 @@ export type AppSettings = {
   translation?: boolean;
   picture?: boolean;
 };
+
+export type ProgressData = {
+  completedLevels: number[];
+  completedRounds: Record<string, number[] | undefined>;
+};

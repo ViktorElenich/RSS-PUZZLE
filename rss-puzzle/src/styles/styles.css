@@ -691,4 +691,10 @@ select {
   align-items: center;
   gap: 8px;
 }
+
+.completed-option {
+  color: #48bb78; /* Green-500 */
+  font-weight: 600;
+  background-color: rgba(72, 187, 120, 0.1);
+}
 /*  */
