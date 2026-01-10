@@ -9,6 +9,7 @@ import {
 } from './main-ui';
 import { fetchLevelData } from '../../api/api';
 import { PageIds, MainPageConstants, GameConstants } from '../../core/constants';
+import { GameProgress } from '../../services/game-progress.service';
 import { GameSettings } from '../../services/game-settings.service';
 import { createElement } from '../../utils/dom';
 import { DragManager } from '../../utils/drag-manager'; 
@@ -46,6 +47,7 @@ export class MainView {
   private currentSentenceIndex = 0;
 
   private settings = new GameSettings();
+  private progress = new GameProgress();
 
   private draggingElement: DragManager;
 
@@ -203,6 +205,8 @@ export class MainView {
     this.levelSelect.disabled = true;
     this.roundSelect.disabled = true;
 
+    this.initLevelSelector();
+
     const data = await fetchLevelData(this.currentLevel);
 
     if (!data) {
@@ -315,10 +319,13 @@ export class MainView {
       return;
     } 
 
+    this.progress.markRoundCompleted(this.currentLevel, this.currentRoundIndex);
+
     this.currentRoundIndex += 1;
     this.currentSentenceIndex = 0;
 
     if (this.levelCollection && this.currentRoundIndex < this.levelCollection.rounds.length) {
+      this.updateRoundSelector();
       this.roundSelect.value = String(this.currentRoundIndex);
       this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
 
@@ -329,6 +336,9 @@ export class MainView {
       this.renderCurrentSentence();
       this.resetButtonState();
     } else {
+      this.progress.markLevelCompleted(this.currentLevel);
+      this.initLevelSelector();
+      this.updateRoundSelector();
       this.sourceArea.textContent = 'Level Completed! Select next level manually.';
       this.checkBtn.classList.add(MainPageConstants.ClassHidden);
       this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
@@ -407,8 +417,6 @@ export class MainView {
     const currentLength = getCurrentRowWords(this.puzzleArea, this.currentSentenceIndex).length;
     this.checkBtn.disabled = currentLength !== expectedLength;
   }
-
-  
 
   private rebuildPuzzleRows(): void {
     this.puzzleArea.replaceChildren();
@@ -515,9 +523,22 @@ export class MainView {
   }
 
   private initLevelSelector(): void {
+    this.levelSelect.innerHTML = '';
+    
     for (let index = 1; index <= GameConstants.TotalLevels; index += 1) {
-      const option = createElement('option', 
-        { text: String(index), attrs: { value: String(index) } });
+      const isCompleted = this.progress.isLevelCompleted(index);
+      
+      const text = isCompleted ? `${index} ★` : String(index);
+      
+      const option = createElement('option', { 
+        text: text, 
+        attrs: { value: String(index) },
+      });
+
+      if (isCompleted) {
+        option.classList.add('completed-option');
+      }
+      
       this.levelSelect.append(option);
     }
     this.levelSelect.value = String(this.currentLevel);
@@ -527,15 +548,23 @@ export class MainView {
     if (!this.levelCollection) { return; }
     
     this.roundSelect.innerHTML = '';
-    
     const roundsCount = this.levelCollection.rounds.length;
 
     for (let index = 0; index < roundsCount; index += 1) {
       const roundNumber = index + 1;
+      const isCompleted = this.progress.isRoundCompleted(this.currentLevel, index);
+      
+      const text = isCompleted ? `${roundNumber} ✓` : String(roundNumber);
+      
       const option = createElement('option', { 
-        text: String(roundNumber), 
+        text: text, 
         attrs: { value: String(index) },
       });
+      
+      if (isCompleted) {
+        option.classList.add('completed-option');
+      }
+      
       this.roundSelect.append(option);
     }
     
