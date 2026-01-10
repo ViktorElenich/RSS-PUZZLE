@@ -23,7 +23,10 @@ export class MainView {
   private readonly translationHint: HTMLElement;
   private readonly playAudioBtn: HTMLButtonElement;
   private readonly hintsWrapper: HTMLElement;
-  private levelInfoElement: HTMLElement;
+  
+  private selectorsContainer: HTMLElement;
+  private levelSelect: HTMLSelectElement;
+  private roundSelect: HTMLSelectElement;
   
   private checkBtn: HTMLButtonElement;
   private giveUpBtn: HTMLButtonElement;
@@ -65,7 +68,30 @@ export class MainView {
       },
     });
 
-    this.levelInfoElement = createElement('div', { className: 'level-selectors', text: '' });
+    this.levelSelect = createElement('select', { 
+      className: 'game-select',
+      on: [['change', this.handleLevelChange.bind(this)]],
+    });
+    this.initLevelSelector();
+
+    this.roundSelect = createElement('select', { 
+      className: 'game-select',
+      on: [['change', this.handleRoundChange.bind(this)]],
+    });
+
+    const levelGroup = createElement('div', { className: 'selector-group' },
+      createElement('span', { className: 'selector-label', text: 'Level:' }),
+      this.levelSelect,
+    );
+    const roundGroup = createElement('div', { className: 'selector-group' },
+      createElement('span', { className: 'selector-label', text: 'Round:' }),
+      this.roundSelect,
+    );
+
+    this.selectorsContainer = createElement('div', { className: 'level-selectors' }, 
+      levelGroup, 
+      roundGroup,
+    );
 
     this.translationHint = createElement('div', { 
       className: `${MainPageConstants.HintTranslationClass} ${MainPageConstants.ClassHidden}`, 
@@ -174,20 +200,27 @@ export class MainView {
   }
 
   private async initGame(): Promise<void> {
+    this.levelSelect.disabled = true;
+    this.roundSelect.disabled = true;
+
     const data = await fetchLevelData(this.currentLevel);
 
     if (!data) {
       this.sourceArea.textContent = 'Error loading data';
+      this.levelSelect.disabled = false;
       return;
     }
 
     this.levelCollection = data;
+    this.updateRoundSelector();
     this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
 
     await this.loadRoundImage();
     
-    this.updateLevelInfo();
     this.renderCurrentSentence();
+
+    this.levelSelect.disabled = false;
+    this.roundSelect.disabled = false;
   }
 
   private renderCurrentSentence(): void {
@@ -286,17 +319,17 @@ export class MainView {
     this.currentSentenceIndex = 0;
 
     if (this.levelCollection && this.currentRoundIndex < this.levelCollection.rounds.length) {
+      this.roundSelect.value = String(this.currentRoundIndex);
       this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
 
       await this.loadRoundImage();
       
       this.rebuildPuzzleRows();
       
-      this.updateLevelInfo();
       this.renderCurrentSentence();
       this.resetButtonState();
     } else {
-      this.sourceArea.textContent = 'Level Completed! Great job!';
+      this.sourceArea.textContent = 'Level Completed! Select next level manually.';
       this.checkBtn.classList.add(MainPageConstants.ClassHidden);
       this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
       this.continueBtn.classList.add(MainPageConstants.ClassHidden);
@@ -375,10 +408,7 @@ export class MainView {
     this.checkBtn.disabled = currentLength !== expectedLength;
   }
 
-  private updateLevelInfo(): void {
-    this.levelInfoElement.textContent = 
-      `Level: ${this.currentLevel} | Round: ${this.currentRoundIndex + 1}`;
-  }
+  
 
   private rebuildPuzzleRows(): void {
     this.puzzleArea.replaceChildren();
@@ -484,6 +514,57 @@ export class MainView {
     }
   }
 
+  private initLevelSelector(): void {
+    for (let index = 1; index <= GameConstants.TotalLevels; index += 1) {
+      const option = createElement('option', 
+        { text: String(index), attrs: { value: String(index) } });
+      this.levelSelect.append(option);
+    }
+    this.levelSelect.value = String(this.currentLevel);
+  }
+
+  private updateRoundSelector(): void {
+    if (!this.levelCollection) { return; }
+    
+    this.roundSelect.innerHTML = '';
+    
+    const roundsCount = this.levelCollection.rounds.length;
+
+    for (let index = 0; index < roundsCount; index += 1) {
+      const roundNumber = index + 1;
+      const option = createElement('option', { 
+        text: String(roundNumber), 
+        attrs: { value: String(index) },
+      });
+      this.roundSelect.append(option);
+    }
+    
+    this.roundSelect.value = String(this.currentRoundIndex);
+  }
+
+  private async handleLevelChange(): Promise<void> {
+    const newLevel = Number(this.levelSelect.value);
+    this.currentLevel = newLevel;
+    this.currentRoundIndex = 0;
+    
+    await this.initGame();
+  }
+
+  private async handleRoundChange(): Promise<void> {
+    const newRoundIndex = Number(this.roundSelect.value);
+    this.currentRoundIndex = newRoundIndex;
+    this.currentSentenceIndex = 0;
+
+    this.resetButtonState();
+    this.rebuildPuzzleRows();
+
+    if (this.levelCollection) {
+      this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
+      await this.loadRoundImage();
+      this.renderCurrentSentence();
+    }
+  }
+
   private showContinueButton(): void {
     this.checkBtn.classList.add(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
@@ -511,6 +592,6 @@ export class MainView {
       this.pictureToggleBtn,
     );
 
-    return createElement('div', { className: 'game-controls-bar' }, this.levelInfoElement, hints);
+    return createElement('div', { className: 'game-controls-bar' }, this.selectorsContainer, hints);
   }
 }
