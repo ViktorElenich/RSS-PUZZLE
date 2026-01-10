@@ -24,6 +24,7 @@ export class MainView {
   private readonly translationHint: HTMLElement;
   private readonly playAudioBtn: HTMLButtonElement;
   private readonly hintsWrapper: HTMLElement;
+  private readonly artworkInfoElement: HTMLElement;
   
   private selectorsContainer: HTMLElement;
   private levelSelect: HTMLSelectElement;
@@ -105,6 +106,10 @@ export class MainView {
       className: `${MainPageConstants.HintTranslationClass} ${MainPageConstants.ClassHidden}`, 
     });
 
+    this.artworkInfoElement = createElement('div', { 
+      className: `artwork-info ${MainPageConstants.ClassHidden}`,
+    });
+
     this.puzzleArea.addEventListener('click', this.handleWordClick.bind(this));
     this.sourceArea.addEventListener('click', this.handleWordClick.bind(this));
 
@@ -167,6 +172,7 @@ export class MainView {
       controlsBar,
       this.hintsWrapper,
       this.puzzleArea,
+      this.artworkInfoElement,
       this.sourceArea,
       buttonsPanel,
     );
@@ -210,6 +216,7 @@ export class MainView {
   private async initGame(): Promise<void> {
     this.levelSelect.disabled = true;
     this.roundSelect.disabled = true;
+    this.hideRoundResult(); 
 
     this.initLevelSelector();
 
@@ -311,6 +318,10 @@ export class MainView {
       }
       this.translationHint.classList.remove(MainPageConstants.ClassHidden);
       this.updatePlayBtnVisibility(true);
+
+      if (this.currentSentenceIndex === GameConstants.TotalSentences - 1) {
+        this.showRoundResult();
+      }
     } 
   }
 
@@ -325,6 +336,7 @@ export class MainView {
       return;
     } 
 
+    this.hideRoundResult();
     this.progress.markRoundCompleted(this.currentLevel, this.currentRoundIndex);
 
     let nextRoundIndex = this.currentRoundIndex + 1;
@@ -392,6 +404,10 @@ export class MainView {
 
     this.updatePlayBtnVisibility(true);
     this.playAudio();
+
+    if (this.currentSentenceIndex === GameConstants.TotalSentences - 1) {
+      this.showRoundResult();
+    }
   }
 
   private generateWordData(): ShuffledWord[] {
@@ -611,12 +627,39 @@ export class MainView {
 
     this.resetButtonState();
     this.rebuildPuzzleRows();
+    this.hideRoundResult();
 
     if (this.levelCollection) {
       this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
       await this.loadRoundImage();
       this.renderCurrentSentence();
     }
+  }
+
+  private showRoundResult(): void {
+    if (!this.currentRoundData) { return; }
+
+    const { imageSrc, author, name, year } = this.currentRoundData.levelData;
+    const fullImageUrl = `${MainPageConstants.ImagesBaseUrl}${imageSrc}`;
+
+    this.puzzleArea.style.backgroundImage = `url(${fullImageUrl})`;
+    this.puzzleArea.style.backgroundSize = 'cover'; 
+    this.puzzleArea.style.backgroundPosition = 'center';
+    this.puzzleArea.style.backgroundRepeat = 'no-repeat';
+
+    this.puzzleArea.classList.add('completed');
+
+    this.artworkInfoElement.innerHTML = `
+      <span class="artwork-title">${name}</span>
+      <span>${author}, ${year}</span>
+    `;
+    this.artworkInfoElement.classList.remove(MainPageConstants.ClassHidden);
+  }
+
+  private hideRoundResult(): void {
+    this.puzzleArea.classList.remove('completed');
+    this.puzzleArea.style.backgroundImage = '';
+    this.artworkInfoElement.classList.add(MainPageConstants.ClassHidden);
   }
 
   private showContinueButton(): void {

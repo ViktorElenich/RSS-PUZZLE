@@ -1,4 +1,4 @@
-import { MainPageConstants, PuzzleRenderConstants } from '../core/constants';
+import { GameConstants, MainPageConstants, PuzzleRenderConstants } from '../core/constants';
 
 export function drawPuzzlePiece(
   word: string,
@@ -73,7 +73,14 @@ export function drawPuzzlePiece(
   context.clip();
 
   if (bgImage) {
-    context.drawImage(bgImage, -bgX, -bgY);
+    const puzzleTotalHeight = MainPageConstants.PuzzleRowHeightPx * GameConstants.TotalSentences;
+    context.drawImage(
+      bgImage, 
+      -bgX, 
+      -bgY,
+      MainPageConstants.PuzzleWidthPx,
+      puzzleTotalHeight,
+    );
     context.fillStyle = PuzzleRenderConstants.OverlayStyle;
     context.fill();
   } else {
