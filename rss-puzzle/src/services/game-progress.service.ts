@@ -76,4 +76,16 @@ export class GameProgress {
   public isLevelCompleted(level: number): boolean {
     return this.data.completedLevels.includes(level);
   }
+
+  public saveLastPosition(level: number, roundIndex: number): void {
+    this.data.lastPosition = {
+      level,
+      round: roundIndex,
+    };
+    this.save();
+  }
+
+  public getLastPosition(): { level: number; round: number } | undefined {
+    return this.data.lastPosition;
+  }
 }
