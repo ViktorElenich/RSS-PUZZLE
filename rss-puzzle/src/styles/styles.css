@@ -482,6 +482,44 @@ select {
   }
 }
 
+/* Show Image / Round Complete */
+.puzzle-area.completed .word-piece {
+  opacity: 0 !important;
+  transition: opacity 1.5s ease-in-out;
+  pointer-events: none;
+}
+
+.artwork-info {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  color: #fff;
+  text-align: center;
+  font-size: 1.1rem;
+  backdrop-filter: blur(5px);
+  animation: fadeIn 0.5s ease-out;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 10;
+}
+
+.artwork-title {
+  font-weight: bold;
+  font-size: 1.3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4fd1c5;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/*  */
+
 /* Game Buttons */
 .game-buttons {
   display: flex;
