@@ -52,6 +52,12 @@ export class MainView {
   private draggingElement: DragManager;
 
   constructor() {
+    const lastPos = this.progress.getLastPosition();
+    if (lastPos) {
+      this.currentLevel = lastPos.level;
+      this.currentRoundIndex = lastPos.round;
+    }
+
     this.puzzleArea = createPuzzleArea();
     this.sourceArea = createSourceArea();
 
@@ -321,31 +327,46 @@ export class MainView {
 
     this.progress.markRoundCompleted(this.currentLevel, this.currentRoundIndex);
 
-    this.currentRoundIndex += 1;
-    this.currentSentenceIndex = 0;
+    let nextRoundIndex = this.currentRoundIndex + 1;
+    let nextLevel = this.currentLevel;
 
-    if (this.levelCollection && this.currentRoundIndex < this.levelCollection.rounds.length) {
+    if (this.levelCollection && nextRoundIndex >= this.levelCollection.rounds.length) {
+      nextRoundIndex = 0;
+      nextLevel += 1;
+      
+      if (nextLevel > GameConstants.TotalLevels) {
+        nextLevel = 1;
+      }
+      
+      this.progress.markLevelCompleted(this.currentLevel);
+      this.initLevelSelector(); 
+    }
+
+    this.progress.saveLastPosition(nextLevel, nextRoundIndex);
+
+    if (nextLevel === this.currentLevel) {
+      this.currentRoundIndex = nextRoundIndex;
+      this.currentSentenceIndex = 0;
+      
       this.updateRoundSelector();
       this.roundSelect.value = String(this.currentRoundIndex);
-      this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
 
-      await this.loadRoundImage();
-      
-      this.rebuildPuzzleRows();
-      
-      this.renderCurrentSentence();
-      this.resetButtonState();
+      if (this.levelCollection) {
+        this.currentRoundData = this.levelCollection.rounds[this.currentRoundIndex];
+        await this.loadRoundImage();
+        this.rebuildPuzzleRows();
+        this.renderCurrentSentence();
+        this.resetButtonState();
+      }
     } else {
-      this.progress.markLevelCompleted(this.currentLevel);
-      this.initLevelSelector();
-      this.updateRoundSelector();
-      this.sourceArea.textContent = 'Level Completed! Select next level manually.';
-      this.checkBtn.classList.add(MainPageConstants.ClassHidden);
-      this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
-      this.continueBtn.classList.add(MainPageConstants.ClassHidden);
-      this.translationToggleBtn.classList.add(MainPageConstants.ClassHidden);
-      this.audioToggleBtn.classList.add(MainPageConstants.ClassHidden);
-      this.playAudioBtn.classList.add(MainPageConstants.ClassHidden);
+      this.currentLevel = nextLevel;
+      this.currentRoundIndex = nextRoundIndex;
+      this.currentSentenceIndex = 0;
+
+      this.levelSelect.value = String(this.currentLevel);
+      
+      await this.initGame();
+      this.resetButtonState();
     }
   }
 
@@ -575,6 +596,8 @@ export class MainView {
     const newLevel = Number(this.levelSelect.value);
     this.currentLevel = newLevel;
     this.currentRoundIndex = 0;
+
+    this.progress.saveLastPosition(this.currentLevel, this.currentRoundIndex);
     
     await this.initGame();
   }
@@ -583,6 +606,8 @@ export class MainView {
     const newRoundIndex = Number(this.roundSelect.value);
     this.currentRoundIndex = newRoundIndex;
     this.currentSentenceIndex = 0;
+
+    this.progress.saveLastPosition(this.currentLevel, this.currentRoundIndex);
 
     this.resetButtonState();
     this.rebuildPuzzleRows();

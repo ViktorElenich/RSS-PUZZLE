@@ -81,4 +81,8 @@ export type AppSettings = {
 export type ProgressData = {
   completedLevels: number[];
   completedRounds: Record<string, number[] | undefined>;
+  lastPosition?: {
+    level: number;
+    round: number;
+  };
 };
