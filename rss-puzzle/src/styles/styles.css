@@ -488,6 +488,12 @@ select {
   transition: opacity 1.5s ease-in-out;
   pointer-events: none;
 }
+.puzzle-area.completed .puzzle-row {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
 
 .artwork-info {
   margin: 1rem 0;
@@ -734,5 +740,123 @@ select {
   color: #48bb78; /* Green-500 */
   font-weight: 600;
   background-color: rgba(72, 187, 120, 0.1);
+}
+/*  */
+/* Statistics Page */
+
+.statistics-page {
+  padding: 2rem;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+}
+
+.stats-container {
+  background: rgba(30, 41, 59, 0.9);
+  padding: 2rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 800px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.stats-title {
+  text-align: center;
+  color: #4fd1c5;
+  margin-bottom: 1.5rem;
+  font-size: 2rem;
+}
+
+.stats-artwork {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.stats-artwork-img {
+  width: 150px;
+  height: auto;
+  border-radius: 4px;
+  border: 2px solid rgba(255,255,255,0.2);
+  margin-bottom: 0.5rem;
+}
+
+.stats-artwork-title {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.stats-artwork-author {
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+.stats-list-block {
+  margin-bottom: 1.5rem;
+}
+
+.stats-list-header {
+  font-size: 1.2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stats-unknown .stats-list-header { color: #fc8181; /* Red */ }
+.stats-known .stats-list-header { color: #68d391; /* Green */ }
+
+.stats-count {
+  background: rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.stats-list {
+  list-style: none;
+  padding: 0;
+}
+
+.stats-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 0.5rem;
+  padding: 4px 0;
+}
+
+.stats-audio-btn {
+  background: none;
+  border: none;
+  color: #cbd5e0;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.stats-audio-btn:hover {
+  color: #4fd1c5;
+}
+
+.stats-audio-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.stats-text {
+  font-size: 1rem;
+  color: #e2e8f0;
+}
+
+.stats-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 }
 /*  */

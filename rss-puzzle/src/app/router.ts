@@ -3,6 +3,7 @@ import { PageIds } from '../core/constants';
 import { LoginView } from '../pages/LoginPage/login-view';
 import { MainView } from '../pages/MainPage/main-view';
 import { StartView } from '../pages/StartPage/start-view';
+import { StatisticsView } from '../pages/StatisticsPage/statistics-view';
 import { storageService } from '../services/storage-service';
 
 export class Router {
@@ -62,6 +63,11 @@ export class Router {
       }
       case PageIds.MainPage: {
         const view = new MainView();
+        pageElement = view.getElement();
+        break;
+      }
+      case PageIds.StatisticsPage: {
+        const view = new StatisticsView();
         pageElement = view.getElement();
         break;
       }

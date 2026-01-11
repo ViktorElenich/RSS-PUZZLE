@@ -86,3 +86,14 @@ export type ProgressData = {
     round: number;
   };
 };
+
+export type RoundStats = {
+  known: WordData[];
+  unknown: WordData[];
+  artwork: {
+    name: string;
+    author: string;
+    year: string;
+    imageSrc: string;
+  };
+}

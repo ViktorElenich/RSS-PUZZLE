@@ -15,7 +15,7 @@ import { createElement } from '../../utils/dom';
 import { DragManager } from '../../utils/drag-manager'; 
 import { shuffleArray } from '../../utils/shuffle';
 
-import type { LevelCollection, Round, ShuffledWord } from '../../core/types';
+import type { LevelCollection, Round, ShuffledWord, WordData } from '../../core/types';
 
 export class MainView {
   private readonly element: HTMLElement;
@@ -33,6 +33,7 @@ export class MainView {
   private checkBtn: HTMLButtonElement;
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
+  private resultsBtn: HTMLButtonElement;
 
   private translationToggleBtn: HTMLButtonElement;
   private audioToggleBtn: HTMLButtonElement;
@@ -51,6 +52,8 @@ export class MainView {
   private progress = new GameProgress();
 
   private draggingElement: DragManager;
+
+  private roundStats: { known: WordData[]; unknown: WordData[] } = { known: [], unknown: [] };
 
   constructor() {
     const lastPos = this.progress.getLastPosition();
@@ -117,6 +120,8 @@ export class MainView {
     this.giveUpBtn = this.createButton(MainPageConstants.ButtonGiveUp, 'game-btn-secondary');
     this.continueBtn = this.createButton(
       MainPageConstants.ButtonContinue, 'game-btn-primary hidden');
+    this.resultsBtn = this.createButton(
+      MainPageConstants.ButtonResults, 'game-btn-secondary hidden');
     
     this.translationToggleBtn = createElement('button', {
       className: MainPageConstants.HintButtonClass,
@@ -159,10 +164,20 @@ export class MainView {
     this.checkBtn.addEventListener('click', this.handleCheck.bind(this));
     this.continueBtn.addEventListener('click', this.handleContinue.bind(this));
     this.giveUpBtn.addEventListener('click', this.handleGiveUp.bind(this));
+    this.resultsBtn.addEventListener('click', () => { 
+      const statsData = {
+        known: this.roundStats.known,
+        unknown: this.roundStats.unknown,
+        artwork: this.currentRoundData?.levelData,
+      };
+      localStorage.setItem('rss-puzzle-stats', JSON.stringify(statsData));
+      globalThis.location.hash = PageIds.StatisticsPage;
+    });
 
     const buttonsPanel = createElement('div', { className: 'game-buttons' }, 
       this.giveUpBtn, 
       this.checkBtn,
+      this.resultsBtn,
       this.continueBtn,
     );
 
@@ -216,7 +231,8 @@ export class MainView {
   private async initGame(): Promise<void> {
     this.levelSelect.disabled = true;
     this.roundSelect.disabled = true;
-    this.hideRoundResult(); 
+    this.hideRoundResult();
+    this.roundStats = { known: [], unknown: [] };
 
     this.initLevelSelector();
 
@@ -306,7 +322,13 @@ export class MainView {
     const hasError = checkResults.includes(false);
 
     if (!hasError) {
-      this.showContinueButton();
+      this.roundStats.known.push(sentenceData);
+
+      if (this.currentSentenceIndex < GameConstants.TotalSentences - 1) {
+        this.showContinueButtonOnly();
+      } else {
+        this.showRoundResult();
+      }
       if (!this.settings.isPictureEnabled && this.currentBackgroundImage) {
         const currentRow = this.puzzleArea.children[this.currentSentenceIndex];
         if (currentRow instanceof HTMLElement) {
@@ -337,6 +359,7 @@ export class MainView {
     } 
 
     this.hideRoundResult();
+    this.roundStats = { known: [], unknown: [] };
     this.progress.markRoundCompleted(this.currentLevel, this.currentRoundIndex);
 
     let nextRoundIndex = this.currentRoundIndex + 1;
@@ -384,6 +407,9 @@ export class MainView {
 
   private handleGiveUp(): void {
     if (!this.currentRoundData || !this.currentBackgroundImage) { return; }
+
+    const sentenceData = this.currentRoundData.words[this.currentSentenceIndex];
+    this.roundStats.unknown.push(sentenceData);
     
     clearValidationStyles(this.puzzleArea, this.currentSentenceIndex);
 
@@ -399,7 +425,7 @@ export class MainView {
     const successResults = correctWords.map(() => true);
     setValidationStyles(this.puzzleArea, this.currentSentenceIndex, successResults);
 
-    this.showContinueButton();
+    this.showContinueButtonOnly();
     this.translationHint.classList.remove(MainPageConstants.ClassHidden);
 
     this.updatePlayBtnVisibility(true);
@@ -407,6 +433,8 @@ export class MainView {
 
     if (this.currentSentenceIndex === GameConstants.TotalSentences - 1) {
       this.showRoundResult();
+    } else {
+      this.showContinueButtonOnly();
     }
   }
 
@@ -654,6 +682,7 @@ export class MainView {
       <span>${author}, ${year}</span>
     `;
     this.artworkInfoElement.classList.remove(MainPageConstants.ClassHidden);
+    this.showCompletionButtons();
   }
 
   private hideRoundResult(): void {
@@ -662,16 +691,25 @@ export class MainView {
     this.artworkInfoElement.classList.add(MainPageConstants.ClassHidden);
   }
 
-  private showContinueButton(): void {
+  private showCompletionButtons(): void {
     this.checkBtn.classList.add(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
     this.continueBtn.classList.remove(MainPageConstants.ClassHidden);
+    this.resultsBtn.classList.remove(MainPageConstants.ClassHidden);
+  }
+
+  private showContinueButtonOnly(): void {
+    this.checkBtn.classList.add(MainPageConstants.ClassHidden);
+    this.giveUpBtn.classList.add(MainPageConstants.ClassHidden);
+    this.continueBtn.classList.remove(MainPageConstants.ClassHidden);
+    this.resultsBtn.classList.add(MainPageConstants.ClassHidden);
   }
 
   private resetButtonState(): void {
     this.checkBtn.classList.remove(MainPageConstants.ClassHidden);
     this.giveUpBtn.classList.remove(MainPageConstants.ClassHidden);
     this.continueBtn.classList.add(MainPageConstants.ClassHidden);
+    this.resultsBtn.classList.add(MainPageConstants.ClassHidden);
   }
 
   private createButton(text: string, extraClass: string): HTMLButtonElement {
