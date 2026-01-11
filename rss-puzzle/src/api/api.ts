@@ -1,7 +1,9 @@
+import { BASE } from '../core/constants';
+
 import type { LevelCollection } from '../core/types';
 
 export function getWordCollectionUrl(level: number): string {
-  return `./assets/data/wordCollectionLevel${level}.json`;
+  return `${BASE}assets/data/wordCollectionLevel${level}.json`;
 }
 
 function isLevelCollection(data: unknown): data is LevelCollection {
