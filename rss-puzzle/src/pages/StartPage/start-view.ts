@@ -5,6 +5,7 @@ import { createElement } from '../../utils/dom';
 export class StartView {
   private readonly element: HTMLElement;
   private readonly startButton: HTMLButtonElement;
+  private readonly logoutButton: HTMLButtonElement;
 
   constructor() {
     const user = storageService.getUser();
@@ -14,6 +15,12 @@ export class StartView {
       className: 'start-button',
       text: StartPageConstants.ButtonText,
       on: [['click', (): void => { this.handleStartGame(); }]],
+    });
+
+    this.logoutButton = createElement('button', {
+      className: 'logout-button',
+      text: 'Logout',
+      on: [['click', (): void => { this.handleLogout(); }]],
     });
 
     const title = createElement('h1', {
@@ -31,9 +38,14 @@ export class StartView {
       text: `Hello, ${userName}!`,
     });
 
+    const buttonsWrapper = createElement('div', { className: 'start-buttons-wrapper' }, 
+      this.startButton, 
+      this.logoutButton,
+    );
+
     const content = createElement('div', {
       className: 'start-content',
-    }, greeting, title, description, this.startButton);
+    }, greeting, title, description, buttonsWrapper);
 
     this.element = createElement('div', {
       className: 'start-page',
@@ -47,5 +59,10 @@ export class StartView {
 
   private handleStartGame(): void {
     globalThis.location.hash = PageIds.MainPage;
+  }
+
+  private handleLogout(): void {
+    storageService.clearUser();
+    globalThis.location.hash = PageIds.LoginPage;
   }
 }
