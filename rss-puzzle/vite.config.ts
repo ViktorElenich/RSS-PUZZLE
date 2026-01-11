@@ -1,0 +1,9 @@
+import { defineConfig } from 'vite';
+
+// eslint-disable-next-line import-x/no-default-export
+export default defineConfig({
+  base: '/RSS-PUZZLE/', 
+  build: {
+    outDir: 'dist',
+  },
+});

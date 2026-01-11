@@ -25,9 +25,8 @@
     "noUncheckedSideEffectImports": true,
     "strictPropertyInitialization": true,
     "noImplicitAny": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": ["src"],
+  "include": ["src", "vite.config.ts"],
   "exclude": ["node_modules"]
 }
-
