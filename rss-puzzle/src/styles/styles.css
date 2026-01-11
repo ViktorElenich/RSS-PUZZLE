@@ -794,39 +794,51 @@ select {
 }
 
 .stats-list-block {
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
 }
 
 .stats-list-header {
-  font-size: 1.2rem;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  padding-bottom: 0.5rem;
+  font-size: 1.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.8rem;
   margin-bottom: 1rem;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.stats-unknown .stats-list-header { color: #fc8181; /* Red */ }
-.stats-known .stats-list-header { color: #68d391; /* Green */ }
+.stats-unknown .stats-list-header { color: #fc8181; }
+.stats-known .stats-list-header { color: #68d391; }
 
 .stats-count {
   background: rgba(255,255,255,0.1);
   padding: 2px 8px;
   border-radius: 12px;
   font-size: 0.9rem;
+  color: #fff;
 }
 
 .stats-list {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .stats-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 0.5rem;
-  padding: 4px 0;
+  gap: 12px;
+  margin-bottom: 0.8rem;
+  padding: 10px 15px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  transition: background 0.2s, transform 0.2s;
+  border-left: 4px solid transparent;
 }
 
 .stats-audio-btn {
@@ -840,18 +852,45 @@ select {
   transition: color 0.2s;
 }
 
+.stats-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(4px);
+}
+
+.stats-unknown .stats-item { border-left-color: #fc8181; }
+.stats-known .stats-item { border-left-color: #68d391; }
+
+.stats-audio-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  color: #cbd5e0;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
 .stats-audio-btn:hover {
-  color: #4fd1c5;
+  background: #4fd1c5;
+  color: #fff;
+  transform: scale(1.1);
 }
 
 .stats-audio-btn svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 
 .stats-text {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: #e2e8f0;
+  line-height: 1.4;
 }
 
 .stats-buttons {
