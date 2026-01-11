@@ -52,7 +52,7 @@ export class MainView {
   private settings = new GameSettings();
   private progress = new GameProgress();
 
-  private draggingElement: DragManager;
+  public draggingElement: DragManager;
 
   private roundStats: { known: WordData[]; unknown: WordData[] } = { known: [], unknown: [] };
 
