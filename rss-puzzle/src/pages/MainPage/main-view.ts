@@ -34,6 +34,7 @@ export class MainView {
   private giveUpBtn: HTMLButtonElement;
   private continueBtn: HTMLButtonElement;
   private resultsBtn: HTMLButtonElement;
+  private homeBtn: HTMLButtonElement;
 
   private translationToggleBtn: HTMLButtonElement;
   private audioToggleBtn: HTMLButtonElement;
@@ -122,6 +123,12 @@ export class MainView {
       MainPageConstants.ButtonContinue, 'game-btn-primary hidden');
     this.resultsBtn = this.createButton(
       MainPageConstants.ButtonResults, 'game-btn-secondary hidden');
+    this.homeBtn = createElement('button', {
+      className: 'nav-btn-home hint-btn',
+      attrs: { title: 'Back to Menu' },
+      on: [['click', (): void => { globalThis.location.hash = PageIds.StartPage; }]],
+    });
+    this.homeBtn.innerHTML = MainPageConstants.IconHome;
     
     this.translationToggleBtn = createElement('button', {
       className: MainPageConstants.HintButtonClass,
@@ -735,6 +742,7 @@ export class MainView {
 
   private createControlsBar(): HTMLElement {
     const hints = createElement('div', { className: 'hint-buttons' }, 
+      this.homeBtn,
       this.audioToggleBtn,
       this.translationToggleBtn,
       this.pictureToggleBtn,

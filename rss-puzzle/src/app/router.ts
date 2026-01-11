@@ -1,4 +1,3 @@
-import { HeaderView } from '../components/header/header';
 import { PageIds } from '../core/constants';
 import { LoginView } from '../pages/LoginPage/login-view';
 import { MainView } from '../pages/MainPage/main-view';
@@ -41,12 +40,6 @@ export class Router {
 
   private renderPage(pageId: string): void {
     document.body.innerHTML = '';
-    const rootElement = document.body;
-
-    if (pageId !== PageIds.LoginPage) {
-      const header = new HeaderView();
-      rootElement.append(header.getElement());
-    }
 
     let pageElement: HTMLElement | undefined;
 
