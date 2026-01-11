@@ -171,6 +171,19 @@ export class MainView {
         artwork: this.currentRoundData?.levelData,
       };
       localStorage.setItem('rss-puzzle-stats', JSON.stringify(statsData));
+      this.progress.markRoundCompleted(this.currentLevel, this.currentRoundIndex);
+
+      let nextRoundIndex = this.currentRoundIndex + 1;
+      let nextLevel = this.currentLevel;
+
+      if (this.levelCollection && nextRoundIndex >= this.levelCollection.rounds.length) {
+        nextRoundIndex = 0;
+        nextLevel += 1;
+        if (nextLevel > GameConstants.TotalLevels) { nextLevel = 1; }
+        this.progress.markLevelCompleted(this.currentLevel);
+      }
+      this.progress.saveLastPosition(nextLevel, nextRoundIndex);
+      
       globalThis.location.hash = PageIds.StatisticsPage;
     });
 
